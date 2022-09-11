@@ -6,8 +6,8 @@ use macroquad::text::measure_text;
 use crate::core::{Ctx, Element, Phase};
 use crate::elements::node::Node;
 
-use super::AlignY;
-use super::AlignX;
+use crate::elements::common::AlignY;
+use crate::elements::common::AlignX;
 
 #[derive(Debug, Clone)]
 pub struct Text {

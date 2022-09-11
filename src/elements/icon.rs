@@ -2,10 +2,8 @@ use macroquad::color::Color;
 use macroquad::math::{Rect, Vec2};
 use macroquad::texture::{draw_texture_ex, DrawTextureParams, Texture2D};
 
-use crate::core::{Phase, Ctx, Element};
-
-use super::{AlignX, AlignY};
-
+use crate::core::{Ctx, Element, Phase};
+use crate::elements::common::{AlignX, AlignY};
 
 #[derive(Debug, Copy, Clone)]
 pub struct Icon {

@@ -1,7 +1,8 @@
 use std::fmt::Debug;
 use macroquad::input::{is_mouse_button_down, mouse_position, MouseButton};
-use macroquad::math::{ Vec2};
-use crate::core::{Ctx, Element, Phase};
+use macroquad::math::Vec2;
+use crate::core::{Ctx, Element, Flag, Phase};
+use crate::elements::node::Node;
 
 #[derive(Debug, Clone)]
 pub struct MouseHandler<Event: Debug + Clone> {
@@ -34,6 +35,29 @@ impl<Event: Debug + Clone> Element<Event> for MouseHandler<Event> {
                         on_event(on_hover);
                     }
                 }
+            }
+        }
+    }
+}
+
+pub struct FlagOnHover<Event> {
+    target: Node<Event>,
+    flag: Flag,
+}
+
+impl<Event: Clone> Element<Event> for FlagOnHover<Event> {
+    fn do_phase(&self, ctx: Ctx<Event>) {
+        match ctx.phase {
+            Phase::Draw => {
+                let hits = ctx.area.contains(Vec2::from(mouse_position()));
+                if hits {
+                    self.target.do_phase(ctx.clone_with(|ctx| assert!(!ctx.flags.insert(self.flag), "duplicate flag: {:?}", self.flag)));
+                } else {
+                    self.target.do_phase(ctx);
+                };
+            }
+            Phase::CollectEvents { .. } => {
+                self.target.do_phase(ctx);
             }
         }
     }

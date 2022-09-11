@@ -1,7 +1,7 @@
 use macroquad::color::{BLUE, GREEN, RED, WHITE};
 use macroquad::window::next_frame;
-use rust_macroquad_ui::elements::{AlignX, AlignY};
 use rust_macroquad_ui::elements::background::{Background, BackgroundFactory};
+use rust_macroquad_ui::elements::common::{AlignX, AlignY};
 use rust_macroquad_ui::elements::group::{Group, GroupFactory, HeightFactory, Layout, Width, WidthFactory};
 use rust_macroquad_ui::elements::name::NameFactory;
 use rust_macroquad_ui::elements::node::Node;
