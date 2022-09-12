@@ -1,9 +1,12 @@
+use std::any::TypeId;
 use std::cell::RefCell;
-use std::collections::HashSet;
+use std::collections::{HashSet, VecDeque};
 use std::fmt::Debug;
 use std::rc::Rc;
 use macroquad::math::Rect;
 use macroquad::prelude::{screen_height, screen_width};
+use crate::elements::name::Name;
+use crate::elements::node::Node;
 use crate::make_bounded_composite;
 
 make_bounded_composite! {pub, ComponentSet<Event>, Element<Event>}
@@ -24,6 +27,19 @@ pub struct Ctx<Event> {
     pub scale: f32,
     pub flags: HashSet<Flag>,
     pub phase: Phase<Event>,
+    pub path: VecDeque<UiPathStep>,
+}
+
+#[derive(Copy, Clone, Debug)]
+pub enum UiPathStep {
+    Name(&'static str),
+    Index(usize),
+}
+
+impl UiPathStep {
+    pub fn extract_path<Event>(node: &Node<Event>, default: &'static str) -> UiPathStep {
+        UiPathStep::Name(node.components.get::<Name>().map(|it| it.0).unwrap_or(default))
+    }
 }
 
 pub trait Element<Event> {
@@ -54,12 +70,31 @@ impl <Event: Clone> Ctx<Event> {
             scale,
             phase,
             flags: Default::default(),
+            path: Default::default()
         }
+    }
+
+    pub fn backtrace(&self) -> String {
+        let mut s = String::new();
+        for step in &self.path {
+            s.push('/');
+            match step {
+                UiPathStep::Name(name) => s.push_str(name),
+                UiPathStep::Index(index) => s.push_str(format!("{}", index).as_str())
+            }
+        }
+        s
     }
 
     pub fn clone_with<F: Fn(&mut Self)>(&self, f: F) -> Self {
         let mut v: Self = self.clone();
         f(&mut v);
+        v
+    }
+
+    pub fn step_down(&self, step: UiPathStep) -> Self {
+        let mut v: Self = self.clone();
+        v.path.push_back(step);
         v
     }
 }

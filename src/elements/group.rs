@@ -1,6 +1,7 @@
 use std::fmt::Debug;
 use macroquad::math::Rect;
-use crate::core::{Ctx, Phase, Element};
+use crate::core::{Ctx, Phase, Element, UiPathStep};
+use crate::elements::name::{Name};
 use crate::elements::node::Node;
 
 #[derive(Debug, Copy, Clone)]
@@ -88,15 +89,11 @@ impl<Event: Clone + Debug + 'static> Element<Event> for Group<Event> {
                 }
             }
             Layout::Vertical => {
-                let sized_children: Vec<_> = self.children.iter()
-                    .map(|it| (it, calc_size_dimension(
+                let sized_children: Vec<_> = self.children.iter().enumerate()
+                    .map(|(i, it)| (it, calc_size_dimension(
                         it,
-                        |it| it.components.get::<Height>().map(|it| it.0),
-                        |it| match it {
-                            Layout::Layered => MergeMode::Max,
-                            Layout::Vertical => MergeMode::Sum,
-                            Layout::Horizontal => MergeMode::Max,
-                        },
+                        Dimension::Vertical,
+                        &ctx.step_down(UiPathStep::Index(i)),
                     )))
                     .collect();
                 let stretch_size = {
@@ -111,30 +108,30 @@ impl<Event: Clone + Debug + 'static> Element<Event> for Group<Event> {
                     (ctx.area.h - total_size) / stretch_count as f32
                 };
                 let mut offset = ctx.area.y;
-                for (child, size) in sized_children.iter().copied() {
+                for (i, (child, size)) in sized_children.iter().copied().enumerate() {
                     let size = match size {
                         Size1D::Fixed(value) => value,
                         Size1D::Stretch => stretch_size,
                     };
-                    child.do_phase(ctx.clone_with(|ctx| ctx.area = Rect::new(
-                        ctx.area.x,
-                        offset,
-                        ctx.area.w,
-                        size,
-                    )));
+                    child.do_phase(ctx
+                        .step_down(UiPathStep::Index(i))
+                        .step_down(UiPathStep::extract_path(child, "<node>"))
+                        .clone_with(|ctx| ctx.area = Rect::new(
+                            ctx.area.x,
+                            offset,
+                            ctx.area.w,
+                            size,
+                        )));
                     offset += size;
                 }
             }
             Layout::Horizontal => {
                 let sized_children: Vec<_> = self.children.iter()
-                    .map(|it| (it, calc_size_dimension(
+                    .enumerate()
+                    .map(|(i, it)| (it, calc_size_dimension(
                         it,
-                        |it| it.components.get::<Width>().map(|it| it.0),
-                        |it| match it {
-                            Layout::Layered => MergeMode::Max,
-                            Layout::Vertical => MergeMode::Max,
-                            Layout::Horizontal => MergeMode::Sum,
-                        },
+                        Dimension::Horizontal,
+                        &ctx.step_down(UiPathStep::Index(i)),
                     )))
                     .collect();
                 let stretch_size = {
@@ -149,17 +146,21 @@ impl<Event: Clone + Debug + 'static> Element<Event> for Group<Event> {
                     (ctx.area.w - total_size) / stretch_count as f32
                 };
                 let mut offset = ctx.area.x;
-                for (child, size) in sized_children.iter().copied() {
+                for (i, (child, size)) in sized_children.iter().copied().enumerate() {
                     let size = match size {
                         Size1D::Fixed(value) => value,
                         Size1D::Stretch => stretch_size,
                     };
-                    child.do_phase(ctx.clone_with(|ctx| ctx.area = Rect::new(
-                        offset,
-                        ctx.area.y,
-                        size,
-                        ctx.area.h,
-                    )));
+                    let ctx = ctx
+                        .step_down(UiPathStep::Index(i))
+                        .step_down(UiPathStep::extract_path(child, "<node>"))
+                        .clone_with(|ctx| ctx.area = Rect::new(
+                            offset,
+                            ctx.area.y,
+                            size,
+                            ctx.area.h,
+                        ));
+                    child.do_phase(ctx);
                     offset += size;
                 }
             }
@@ -172,45 +173,78 @@ enum MergeMode {
     Sum,
 }
 
+#[derive(Copy, Clone, Debug)]
+enum Dimension {
+    Horizontal,
+    Vertical,
+}
+
 fn calc_size_dimension<Event>(
     node: &Node<Event>,
-    extract_dimension: fn(&Node<Event>) -> Option<Size1D>,
-    merge_strategy: fn(Layout) -> MergeMode,
+    dimension: Dimension,
+    ctx: &Ctx<Event>,
 ) -> Size1D
     where Event: Clone + Debug + 'static
 {
-    if let Some(size) = extract_dimension(node) {
-        size
-    } else {
-        let group = node.components.get::<Group<Event>>().expect("failed to get Width");
-        match merge_strategy(group.layout) {
-            MergeMode::Max => {
-                group.children.iter()
-                    .map(|it| calc_size_dimension(it, extract_dimension, merge_strategy))
-                    .reduce(|a, b| {
-                        match a {
-                            Size1D::Fixed(a) => match b {
-                                Size1D::Fixed(b) => Size1D::Fixed(a.max(b)),
-                                Size1D::Stretch => Size1D::Stretch
-                            }
-                            Size1D::Stretch => Size1D::Stretch,
+    let ctx = ctx.step_down(UiPathStep::extract_path(node, "<node>"));
+    let dimension_value = match dimension {
+        Dimension::Horizontal => node.components.get::<Width>().map(|it| it.0),
+        Dimension::Vertical => node.components.get::<Height>().map(|it| it.0),
+    };
+    match dimension_value {
+        Some(size) => size,
+        None => {
+            match node.components.get::<Group<Event>>() {
+                None => panic!(
+                    "failed to resolve {:?} size of '{}' ({})",
+                    dimension,
+                    node.components.get::<Name>().map(|it| it.0).unwrap_or("unknown"),
+                    ctx.backtrace(),
+                ),
+                Some(group) => {
+                    let merge_strategy = match dimension {
+                        Dimension::Horizontal => match group.layout {
+                            Layout::Layered => MergeMode::Max,
+                            Layout::Vertical => MergeMode::Max,
+                            Layout::Horizontal => MergeMode::Sum,
                         }
-                    })
-                    .unwrap_or(Size1D::Stretch)
-            }
-            MergeMode::Sum => {
-                group.children.iter()
-                    .map(|it| calc_size_dimension(it, extract_dimension, merge_strategy))
-                    .reduce(|a, b| {
-                        match a {
-                            Size1D::Fixed(a) => match b {
-                                Size1D::Fixed(b) => Size1D::Fixed(a + b),
-                                Size1D::Stretch => Size1D::Stretch,
-                            }
-                            Size1D::Stretch => Size1D::Stretch
+                        Dimension::Vertical => match group.layout {
+                            Layout::Layered => MergeMode::Max,
+                            Layout::Vertical => MergeMode::Sum,
+                            Layout::Horizontal => MergeMode::Max,
                         }
-                    })
-                    .unwrap_or(Size1D::Stretch)
+                    };
+                    match merge_strategy {
+                        MergeMode::Max => {
+                            group.children.iter().enumerate()
+                                .map(|(i, it)| calc_size_dimension(it, dimension, &ctx.step_down(UiPathStep::Index(i))))
+                                .reduce(|a, b| {
+                                    match a {
+                                        Size1D::Fixed(a) => match b {
+                                            Size1D::Fixed(b) => Size1D::Fixed(a.max(b)),
+                                            Size1D::Stretch => Size1D::Stretch
+                                        }
+                                        Size1D::Stretch => Size1D::Stretch,
+                                    }
+                                })
+                                .unwrap_or(Size1D::Stretch)
+                        }
+                        MergeMode::Sum => {
+                            group.children.iter().enumerate()
+                                .map(|(i, it)| calc_size_dimension(it, dimension, &ctx.step_down(UiPathStep::Index(i))))
+                                .reduce(|a, b| {
+                                    match a {
+                                        Size1D::Fixed(a) => match b {
+                                            Size1D::Fixed(b) => Size1D::Fixed(a + b),
+                                            Size1D::Stretch => Size1D::Stretch,
+                                        }
+                                        Size1D::Stretch => Size1D::Stretch
+                                    }
+                                })
+                                .unwrap_or(Size1D::Stretch)
+                        }
+                    }
+                }
             }
         }
     }

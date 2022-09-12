@@ -4,6 +4,7 @@ use macroquad::window::{clear_background, next_frame};
 use rust_macroquad_ui::elements::background::{Background, BackgroundFactory};
 use rust_macroquad_ui::elements::common::{AlignX, AlignY};
 use rust_macroquad_ui::elements::group::{Group, GroupFactory, HeightFactory, Layout, Width, WidthFactory};
+use rust_macroquad_ui::elements::margin::{MarginFactory, MarginOffset};
 use rust_macroquad_ui::elements::name::NameFactory;
 use rust_macroquad_ui::elements::node::Node;
 use rust_macroquad_ui::elements::text::TextFactory;
@@ -16,37 +17,39 @@ async fn main() {
     let root = Node::<Event>::new()
         .group(Layout::Horizontal, vec![
             Node::new()
-                .name("Screen")
-                .width(300.0)
+                .name("Left block")
                 .background_from_color(GREEN)
                 .group(Layout::Vertical, vec![
-                    Node::new().name("map border top").height(16.0),
                     Node::new()
-                        .name("map column")
-                        .height(200.0)
-                        .group(Layout::Horizontal, vec![
-                            Node::new().name("map border left").width(16.0),
+                        .name("minimap frame")
+                        .margin(
+                            MarginOffset::from(16.0),
                             Node::new()
-                                .name("map")
-                                .width_stretch()
-                                .background_from_color(BLUE),
-                            Node::new().name("map border right").width(16.0),
-                        ]),
-                    Node::new().name("map border bottom").height(16.0),
-                    Node::new().name("stretch").height_stretch(),
+                                .name("minimap")
+                                .width(150.0)
+                                .height(150.0)
+                                .background_from_color(BLUE)
+                        ),
+                    Node::new().name("stretch")
+                        .width(0.0)
+                        .height_stretch(),
                     Node::new().name("items panel").group(Layout::Horizontal, vec![
                         Node::new()
                             .name("items list")
-                            .width(150.0)
                             .background_from_color(RED)
                             .group(Layout::Vertical, (0..4)
                                 .map(|i| Node::new()
+                                    .name("Item")
+                                    .width(150.0)
                                     .text(format!("Item {}", i), 32.0, WHITE, AlignX::Left, AlignY::Center)
                                     .height(32.0)
                                 )
                                 .collect()),
                     ])
-                ])
+                ]),
+            Node::new()
+                .name("action area")
+                .width_stretch(),
         ]);
     loop {
         clear_background(BLACK);

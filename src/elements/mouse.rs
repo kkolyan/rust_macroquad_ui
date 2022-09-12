@@ -1,7 +1,7 @@
 use std::fmt::Debug;
 use macroquad::input::{is_mouse_button_down, mouse_position, MouseButton};
 use macroquad::math::Vec2;
-use crate::core::{Ctx, Element, Flag, Phase};
+use crate::core::{Ctx, Element, Flag, UiPathStep, Phase};
 use crate::elements::node::Node;
 
 #[derive(Debug, Clone)]
@@ -47,6 +47,7 @@ pub struct FlagOnHover<Event> {
 
 impl<Event: Clone> Element<Event> for FlagOnHover<Event> {
     fn do_phase(&self, ctx: Ctx<Event>) {
+        let ctx = ctx.step_down(UiPathStep::Name("FlagOnHover"));
         match ctx.phase {
             Phase::Draw => {
                 let hits = ctx.area.contains(Vec2::from(mouse_position()));

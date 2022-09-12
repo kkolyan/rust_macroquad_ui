@@ -1,6 +1,7 @@
 use std::fmt::Debug;
 use crate::core::Element;
 use crate::elements::group::{GroupFactory, HeightFactory, Layout, Width, WidthFactory};
+use crate::elements::name::NameFactory;
 use crate::elements::node::Node;
 
 pub struct MarginOffset {
@@ -53,15 +54,15 @@ pub trait MarginFactory<Event> {
 impl<Event: 'static +  Clone + Debug> MarginFactory<Event> for Node<Event> {
     fn margin(self, offset: MarginOffset, target: Node<Event>) -> Self {
         self.group(Layout::Horizontal, vec![
-            Node::new().width(offset.left),
+            Node::new().name("frame left").width(offset.left).height(0.0),
             Node::new()
                 .add_component(*target.components.get::<Width>().expect("Width required for margin target"))
                 .group(Layout::Vertical, vec![
-                    Node::new().height(offset.top),
+                    Node::new().name("frame top").height(offset.top).width(0.0),
                     target,
-                    Node::new().height(offset.bottom),
+                    Node::new().name("frame bottom").height(offset.bottom).width(0.0),
                 ]),
-            Node::new().width(offset.right),
+            Node::new().name("frame right").width(offset.right).height(0.0),
         ])
     }
 }
