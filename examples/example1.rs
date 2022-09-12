@@ -28,17 +28,18 @@ async fn main() {
                             Node::new().name("map border left").width(16.0),
                             Node::new()
                                 .name("map")
-                                .width(200.0)
+                                .width_stretch()
                                 .background_from_color(BLUE),
                             Node::new().name("map border right").width(16.0),
                         ]),
                     Node::new().name("map border bottom").height(16.0),
-                    Node::new().name("items panel").height(200.0).group(Layout::Horizontal, vec![
+                    Node::new().name("stretch").height_stretch(),
+                    Node::new().name("items panel").group(Layout::Horizontal, vec![
                         Node::new()
                             .name("items list")
                             .width(150.0)
                             .background_from_color(RED)
-                            .group(Layout::Vertical, (0..10)
+                            .group(Layout::Vertical, (0..4)
                                 .map(|i| Node::new()
                                     .text(format!("Item {}", i), 32.0, WHITE, AlignX::Left, AlignY::Center)
                                     .height(32.0)

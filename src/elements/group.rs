@@ -79,7 +79,7 @@ impl<Event> Group<Event> {
     }
 }
 
-impl<Event: Clone> Element<Event> for Group<Event> {
+impl<Event: Clone + Debug + 'static> Element<Event> for Group<Event> {
     fn do_phase(&self, ctx: Ctx<Event>) {
         match self.layout {
             Layout::Layered => {
@@ -88,14 +88,22 @@ impl<Event: Clone> Element<Event> for Group<Event> {
                 }
             }
             Layout::Vertical => {
+                let sized_children: Vec<_> = self.children.iter()
+                    .map(|it| (it, calc_size_dimension(
+                        it,
+                        |it| it.components.get::<Height>().map(|it| it.0),
+                        |it| match it {
+                            Layout::Layered => MergeMode::Max,
+                            Layout::Vertical => MergeMode::Sum,
+                            Layout::Horizontal => MergeMode::Max,
+                        },
+                    )))
+                    .collect();
                 let stretch_size = {
                     let mut total_size = 0.0;
                     let mut stretch_count = 0;
-                    for child in &self.children {
-                        let width = child.components.get::<Height>()
-                            .expect("Height required for layout items")
-                            .0;
-                        match width {
+                    for (_, size) in sized_children.iter().copied() {
+                        match size {
                             Size1D::Fixed(value) => total_size += value,
                             Size1D::Stretch => stretch_count += 1,
                         }
@@ -103,11 +111,8 @@ impl<Event: Clone> Element<Event> for Group<Event> {
                     (ctx.area.h - total_size) / stretch_count as f32
                 };
                 let mut offset = ctx.area.y;
-                for child in &self.children {
-                    let width = child.components.get::<Height>()
-                        .expect("Height required for layout items")
-                        .0;
-                    let size = match width {
+                for (child, size) in sized_children.iter().copied() {
+                    let size = match size {
                         Size1D::Fixed(value) => value,
                         Size1D::Stretch => stretch_size,
                     };
@@ -121,13 +126,21 @@ impl<Event: Clone> Element<Event> for Group<Event> {
                 }
             }
             Layout::Horizontal => {
+                let sized_children: Vec<_> = self.children.iter()
+                    .map(|it| (it, calc_size_dimension(
+                        it,
+                        |it| it.components.get::<Width>().map(|it| it.0),
+                        |it| match it {
+                            Layout::Layered => MergeMode::Max,
+                            Layout::Vertical => MergeMode::Max,
+                            Layout::Horizontal => MergeMode::Sum,
+                        },
+                    )))
+                    .collect();
                 let stretch_size = {
                     let mut total_size = 0.0;
                     let mut stretch_count = 0;
-                    for child in &self.children {
-                        let width = child.components.get::<Width>()
-                            .expect("Width required for layout items")
-                            .0;
+                    for (_, width) in sized_children.iter().copied() {
                         match width {
                             Size1D::Fixed(value) => total_size += value,
                             Size1D::Stretch => stretch_count += 1,
@@ -136,11 +149,8 @@ impl<Event: Clone> Element<Event> for Group<Event> {
                     (ctx.area.w - total_size) / stretch_count as f32
                 };
                 let mut offset = ctx.area.x;
-                for child in &self.children {
-                    let width = child.components.get::<Width>()
-                        .expect(" required for layout items")
-                        .0;
-                    let size = match width {
+                for (child, size) in sized_children.iter().copied() {
+                    let size = match size {
                         Size1D::Fixed(value) => value,
                         Size1D::Stretch => stretch_size,
                     };
@@ -152,6 +162,55 @@ impl<Event: Clone> Element<Event> for Group<Event> {
                     )));
                     offset += size;
                 }
+            }
+        }
+    }
+}
+
+enum MergeMode {
+    Max,
+    Sum,
+}
+
+fn calc_size_dimension<Event>(
+    node: &Node<Event>,
+    extract_dimension: fn(&Node<Event>) -> Option<Size1D>,
+    merge_strategy: fn(Layout) -> MergeMode,
+) -> Size1D
+    where Event: Clone + Debug + 'static
+{
+    if let Some(size) = extract_dimension(node) {
+        size
+    } else {
+        let group = node.components.get::<Group<Event>>().expect("failed to get Width");
+        match merge_strategy(group.layout) {
+            MergeMode::Max => {
+                group.children.iter()
+                    .map(|it| calc_size_dimension(it, extract_dimension, merge_strategy))
+                    .reduce(|a, b| {
+                        match a {
+                            Size1D::Fixed(a) => match b {
+                                Size1D::Fixed(b) => Size1D::Fixed(a.max(b)),
+                                Size1D::Stretch => Size1D::Stretch
+                            }
+                            Size1D::Stretch => Size1D::Stretch,
+                        }
+                    })
+                    .unwrap_or(Size1D::Stretch)
+            }
+            MergeMode::Sum => {
+                group.children.iter()
+                    .map(|it| calc_size_dimension(it, extract_dimension, merge_strategy))
+                    .reduce(|a, b| {
+                        match a {
+                            Size1D::Fixed(a) => match b {
+                                Size1D::Fixed(b) => Size1D::Fixed(a + b),
+                                Size1D::Stretch => Size1D::Stretch,
+                            }
+                            Size1D::Stretch => Size1D::Stretch
+                        }
+                    })
+                    .unwrap_or(Size1D::Stretch)
             }
         }
     }
