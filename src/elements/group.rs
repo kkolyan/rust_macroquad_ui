@@ -2,7 +2,7 @@ use std::fmt::Debug;
 use macroquad::math::Rect;
 use crate::core::Element;
 use crate::core::Ctx;
-use crate::core::UiPathStep;
+use crate::core::NestingLevel;
 use crate::elements::node::Node;
 
 #[derive(Debug, Copy, Clone)]
@@ -101,7 +101,7 @@ impl<Event: Clone + Debug + 'static> Group<Event> {
             .map(|(i, it)| (it, calc_size_dimension(
                 it,
                 dimension,
-                &ctx.step_down(UiPathStep::Index(i)),
+                &ctx.step_down(NestingLevel::Index(i)),
             )))
             .collect();
         let stretch_size = {
@@ -129,8 +129,8 @@ impl<Event: Clone + Debug + 'static> Group<Event> {
                 Size1D::Stretch => stretch_size,
             };
             child.do_phase(ctx
-                .step_down(UiPathStep::Index(i))
-                .step_down(UiPathStep::Name(child.name.unwrap_or("<node>")))
+                .step_down(NestingLevel::Index(i))
+                .step_down(NestingLevel::Name(child.name.unwrap_or("<node>")))
                 .clone_with(|ctx| ctx.area = Rect::new(
                     match dimension {
                         Dimension::Horizontal => offset,
@@ -167,7 +167,7 @@ fn calc_size_dimension<Event>(
 ) -> Size1D
     where Event: Clone + Debug + 'static
 {
-    let ctx = ctx.step_down(UiPathStep::Name(node.name.unwrap_or("<node>")));
+    let ctx = ctx.step_down(NestingLevel::Name(node.name.unwrap_or("<node>")));
     let dimension_value = match dimension {
         Dimension::Horizontal => node.components.get::<Width>().map(|it| it.0),
         Dimension::Vertical => node.components.get::<Height>().map(|it| it.0),
@@ -197,7 +197,7 @@ fn calc_size_dimension<Event>(
                 group.children.iter().enumerate()
                     .map(|(i, it)| calc_size_dimension(
                         it, dimension,
-                        &ctx.step_down(UiPathStep::Index(i)),
+                        &ctx.step_down(NestingLevel::Index(i)),
                     ))
                     .reduce(merge_strategy)
                     .unwrap_or(Size1D::Stretch)

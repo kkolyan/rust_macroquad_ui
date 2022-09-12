@@ -28,11 +28,11 @@ pub struct Ctx<Event> {
     pub scale: f32,
     pub flags: HashSet<Flag>,
     pub phase: Phase<Event>,
-    pub path: VecDeque<UiPathStep>,
+    pub bread_crumbles: VecDeque<NestingLevel>,
 }
 
 #[derive(Copy, Clone, Debug)]
-pub enum UiPathStep {
+pub enum NestingLevel {
     Name(&'static str),
     Index(usize),
 }
@@ -65,17 +65,17 @@ impl<Event: Clone> Ctx<Event> {
             scale,
             phase,
             flags: Default::default(),
-            path: Default::default(),
+            bread_crumbles: Default::default(),
         }
     }
 
     pub fn backtrace(&self) -> String {
         let mut s = String::new();
-        for step in &self.path {
+        for step in &self.bread_crumbles {
             s.push('/');
             match step {
-                UiPathStep::Name(name) => s.push_str(name),
-                UiPathStep::Index(index) => s.push_str(format!("{}", index).as_str())
+                NestingLevel::Name(name) => s.push_str(name),
+                NestingLevel::Index(index) => s.push_str(format!("{}", index).as_str())
             }
         }
         s
@@ -87,9 +87,9 @@ impl<Event: Clone> Ctx<Event> {
         v
     }
 
-    pub fn step_down(&self, step: UiPathStep) -> Self {
+    pub fn step_down(&self, step: NestingLevel) -> Self {
         let mut v: Self = self.clone();
-        v.path.push_back(step);
+        v.bread_crumbles.push_back(step);
         v
     }
 }

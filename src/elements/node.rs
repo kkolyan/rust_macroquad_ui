@@ -1,22 +1,31 @@
+use std::cell::RefCell;
 use std::fmt::Debug;
+use std::rc::{Rc, Weak};
 use crate::core::{ComponentSet, Ctx, Element};
 
 #[derive(Debug, Clone)]
 pub struct Node<Event> {
-    pub name: Option<&'static str>,
+    pub name: Rc<RefCell<NodeName>>,
     pub components: ComponentSet<Event>,
+}
+
+#[derive(Debug, Clone)]
+pub struct NodeName {
+    pub own: Option<&'static str>,
+    pub parent: Weak<RefCell<NodeName>>,
 }
 
 impl<Event> Node<Event> {
     pub fn anon() -> Self {
         Node {
-            name: None,
+            name: Rc::new(RefCell::new(NodeName { own: None, parent: Weak::new() })),
             components: ComponentSet::new(),
         }
     }
+    
     pub fn new(name: &'static str) -> Self {
         Node {
-            name: Some(name),
+            name: Rc::new(RefCell::new(NodeName { own: Some(name), parent: Weak::new() })),
             components: ComponentSet::new(),
         }
     }
