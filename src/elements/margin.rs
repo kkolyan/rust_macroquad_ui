@@ -3,7 +3,6 @@ use std::fmt::Debug;
 use crate::elements::group::GroupFactory;
 use crate::elements::group::HeightFactory;
 use crate::elements::group::Layout;
-use crate::elements::group::Width;
 use crate::elements::group::WidthFactory;
 use crate::elements::node::Node;
 
@@ -59,7 +58,7 @@ impl<Event: 'static +  Clone + Debug> MarginFactory<Event> for Node<Event> {
         self.group(Layout::Horizontal, vec![
             Node::new("frame left").width(offset.left).height(0.0),
             Node::new("frame central column")
-                .add_component(*target.components.get::<Width>().expect("Width required for margin target"))
+                // .add_component(*target.components.get::<Width>().unwrap_or_else(|| panic!("Width required for margin target {}", target.name.unwrap_or("<node>"))))
                 .group(Layout::Vertical, vec![
                     Node::new("frame top").height(offset.top).width(0.0),
                     target,

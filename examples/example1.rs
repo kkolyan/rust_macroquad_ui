@@ -1,4 +1,4 @@
-use macroquad::color::BLACK;
+use macroquad::color::{BLACK, DARKBLUE, ORANGE, PURPLE, YELLOW};
 use macroquad::color::BLUE;
 use macroquad::color::GREEN;
 use macroquad::color::RED;
@@ -7,8 +7,6 @@ use macroquad::window::clear_background;
 use macroquad::window::next_frame;
 
 use rust_macroquad_ui::elements::background::BackgroundFactory;
-use rust_macroquad_ui::elements::common::AlignX;
-use rust_macroquad_ui::elements::common::AlignY;
 use rust_macroquad_ui::elements::group::GroupFactory;
 use rust_macroquad_ui::elements::group::HeightFactory;
 use rust_macroquad_ui::elements::group::Layout;
@@ -17,43 +15,81 @@ use rust_macroquad_ui::elements::margin::MarginFactory;
 use rust_macroquad_ui::elements::margin::MarginOffset;
 use rust_macroquad_ui::elements::node::Node;
 use rust_macroquad_ui::elements::text::TextFactory;
+use rust_macroquad_ui::elements::text::TextStyle;
 
 #[derive(Clone, Debug)]
 enum Event {}
 
 #[macroquad::main("UI Example 001")]
 async fn main() {
-    let root = Node::<Event>::new("root")
-        .group(Layout::Horizontal, vec![
-            Node::new("Left block")
-                .background_from_color(GREEN)
-                .group(Layout::Vertical, vec![
-                    Node::new("minimap frame")
-                        .margin(
-                            MarginOffset::from(16.0),
+    let text_1 = TextStyle {
+        font_size: 32.0,
+        color: WHITE,
+    };
+
+    let left_panel = Node::new("Left panel")
+        .background_from_color(GREEN)
+        .group(Layout::Vertical, vec![
+            Node::new("minimap frame")
+                .margin(
+                    MarginOffset::from(16.0),
+                    Node::new("minimap sub-frame")
+                        .group(Layout::Vertical, vec![
+                            Node::new("map title")
+                                .text("The map", text_1),
                             Node::new("minimap")
                                 .width(150.0)
                                 .height(150.0)
-                                .background_from_color(BLUE)
-                        ),
-                    Node::new("stretch")
-                        .width(0.0)
-                        .height_stretch(),
+                                .background_from_color(BLUE),
+                        ]),
+                ),
+            Node::new("stretch")
+                .width(0.0)
+                .height_stretch(),
+            Node::new("item box")
+                .margin(
+                    MarginOffset::from(8.0),
                     Node::new("items panel").group(Layout::Horizontal, vec![
                         Node::new("items list")
                             .background_from_color(RED)
-                            .group(Layout::Vertical, (0..4)
+                            .group(Layout::Vertical, (0..5)
                                 .map(|i| Node::new("Item")
-                                    .width(150.0)
-                                    .text(format!("Item {}", i), 32.0, WHITE, AlignX::Left, AlignY::Center)
-                                    .height(32.0)
+                                    .text(format!("Item {}", i), text_1)
                                 )
                                 .collect()),
-                    ])
-                ]),
-            Node::new("action area")
-                .width_stretch(),
+                    ]),
+                ),
         ]);
+
+    let right_bottom_panel = Node::new("margin")
+        .background_from_color(WHITE)
+        .margin(
+            MarginOffset::from(8.0),
+            Node::new("right bottom panel")
+                .group(
+                    Layout::Horizontal,
+                    vec![RED, ORANGE, YELLOW, GREEN, BLUE, DARKBLUE, PURPLE].iter()
+                        .map(|color| Node::new("color icon")
+                            .margin(
+                                MarginOffset::from((8.0, 0.0)),
+                                Node::new("icon").background_from_color(*color).width(32.0).height(32.0),
+                            )).collect(),
+                ),
+        );
+
+    let root = Node::<Event>::new("root")
+        .group(Layout::Horizontal, vec![
+            left_panel,
+            Node::new("stretch")
+                .height(0.0)
+                .width_stretch(),
+            Node::new("Right block")
+                .group(Layout::Vertical, vec![
+                    Node::new("stretch").height_stretch().width(0.0),
+                    right_bottom_panel,
+                ]),
+        ]);
+
     loop {
         clear_background(BLACK);
         let _ = rust_macroquad_ui::core::collect_layer_events(&root);

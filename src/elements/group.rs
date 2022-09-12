@@ -3,7 +3,7 @@ use macroquad::math::Rect;
 use crate::core::Element;
 use crate::core::Ctx;
 use crate::core::UiPathStep;
-use crate::elements::node::Node;
+use crate::elements::node::{Node, NodePlugin};
 
 #[derive(Debug, Copy, Clone)]
 pub enum Layout {
@@ -27,7 +27,7 @@ pub trait WidthFactory<Event> {
     fn width_stretch(self) -> Self;
 }
 
-impl<Event> WidthFactory<Event> for Node<Event> {
+impl<Event: Clone> WidthFactory<Event> for Node<Event> {
     fn width(self, value: f32) -> Self {
         self.add_component(Width(Size1D::Fixed(value)))
     }
@@ -39,17 +39,21 @@ impl<Event> WidthFactory<Event> for Node<Event> {
 
 impl<Event> Element<Event> for Width {}
 
+impl<Event: Clone> NodePlugin<Event> for Width {}
+
 #[derive(Debug, Copy, Clone)]
 pub struct Height(pub Size1D);
 
 impl<Event> Element<Event> for Height {}
+
+impl<Event: Clone> NodePlugin<Event> for Height {}
 
 pub trait HeightFactory<Event> {
     fn height(self, value: f32) -> Self;
     fn height_stretch(self) -> Self;
 }
 
-impl<Event> HeightFactory<Event> for Node<Event> {
+impl<Event: Clone> HeightFactory<Event> for Node<Event> {
     fn height(self, value: f32) -> Self {
         self.add_component(Height(Size1D::Fixed(value)))
     }
@@ -94,6 +98,8 @@ impl<Event: Clone + Debug + 'static> Element<Event> for Group<Event> {
         }
     }
 }
+
+impl<Event: Clone + Debug + 'static> NodePlugin<Event> for Group<Event> {}
 
 impl<Event: Clone + Debug + 'static> Group<Event> {
     fn do_layout(&self, ctx: &Ctx<Event>, dimension: Dimension) {

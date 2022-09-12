@@ -1,7 +1,7 @@
 use macroquad::color::Color;
 use macroquad::shapes::draw_rectangle;
 use crate::core::{Ctx, Element, Phase};
-use crate::elements::node::Node;
+use crate::elements::node::{Node, NodePlugin};
 
 #[derive(Debug, Copy, Clone)]
 pub struct Background {
@@ -18,7 +18,7 @@ pub trait BackgroundFactory<Event> {
     fn background_from_color(self, color: Color) -> Self;
 }
 
-impl <Event> BackgroundFactory<Event> for Node<Event> {
+impl <Event: Clone> BackgroundFactory<Event> for Node<Event> {
     fn background_from_color(self, color: Color) -> Self {
         self.add_component(Background::from(color))
     }
@@ -34,3 +34,5 @@ impl<Event> Element<Event> for Background {
         }
     }
 }
+
+impl<Event: Clone> NodePlugin<Event> for Background {}

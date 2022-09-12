@@ -1,35 +1,48 @@
 use macroquad::color::Color;
 use macroquad::math::Vec2;
+use macroquad::prelude::TextDimensions;
 use macroquad::text::draw_text;
 use macroquad::text::measure_text;
 
-use crate::core::{Ctx, Element, Phase};
+use crate::core::Ctx;
+use crate::core::Element;
+use crate::core::Phase;
+use crate::elements::group::HeightFactory;
+use crate::elements::group::WidthFactory;
 use crate::elements::node::Node;
-
-use crate::elements::common::AlignY;
-use crate::elements::common::AlignX;
+use crate::elements::node::NodePlugin;
 
 #[derive(Debug, Clone)]
 pub struct Text {
     value: String,
-    font_size: f32,
-    color: Color,
-    align_x: AlignX,
-    align_y: AlignY,
+    style: TextStyle,
 }
 
 pub trait TextFactory<Event> {
-    fn text(self, value: String, font_size: f32, color: Color, align_x: AlignX, align_y: AlignY) -> Self;
+    fn text<S: ToText>(self, value: S, style: TextStyle) -> Self;
 }
 
-impl <Event> TextFactory<Event> for Node<Event> {
-    fn text(self, value: String, font_size: f32, color: Color, align_x: AlignX, align_y: AlignY) -> Self {
+#[derive(Debug, Clone, Copy)]
+pub struct TextStyle {
+    pub font_size: f32,
+    pub color: Color,
+}
+
+impl <Event: Clone> NodePlugin<Event> for Text {
+    fn attach_to(self, node: Node<Event>) -> Node<Event> {
+        let size = self.measure_self();
+        let style = self.style;
+        node.add_component_raw(self)
+            .width(size.width)
+            .height(style.font_size)// because size.y varies depends on the presence of letters like "p"
+    }
+}
+
+impl <Event: Clone> TextFactory<Event> for Node<Event> {
+    fn text<S: ToText>(self, value: S, style: TextStyle) -> Self {
         self.add_component(Text {
-            value,
-            font_size,
-            color,
-            align_x,
-            align_y
+            value: value.to_text(),
+            style,
         })
     }
 }
@@ -39,22 +52,33 @@ impl<Event> Element<Event> for Text {
         match ctx.phase {
             Phase::Draw => {
                 let text = self.value.as_str();
-                let size = measure_text(text, None, self.font_size as u16, 1.0);
-                let pos = Vec2::new(
-                    match self.align_x {
-                        AlignX::Left => ctx.area.x,
-                        AlignX::Center => ctx.area.x + (ctx.area.w - size.width) * 0.5,
-                        AlignX::Right => ctx.area.x + ctx.area.w - size.width,
-                    },
-                    match self.align_y {
-                        AlignY::Top => ctx.area.y + size.offset_y,
-                        AlignY::Center => ctx.area.y + (ctx.area.h - size.height + size.offset_y) * 0.5,
-                        AlignY::Bottom => ctx.area.y + ctx.area.h - size.height,
-                    },
-                );
-                draw_text(text, pos.x, pos.y, self.font_size, self.color);
+                let size = self.measure_self();
+                let pos = Vec2::new(ctx.area.x, ctx.area.y + size.offset_y + 0.125 * self.style.font_size);
+                draw_text(text, pos.x, pos.y, self.style.font_size, self.style.color);
             }
             Phase::CollectEvents { .. } => {}
         }
+    }
+}
+
+impl Text {
+    fn measure_self(&self) -> TextDimensions {
+        measure_text(self.value.as_str(), None, self.style.font_size as u16, 1.0)
+    }
+}
+
+pub trait ToText {
+    fn to_text(self) -> String;
+}
+
+impl ToText for String {
+    fn to_text(self) -> String {
+        self
+    }
+}
+
+impl ToText for &str {
+    fn to_text(self) -> String {
+        self.to_owned()
     }
 }
