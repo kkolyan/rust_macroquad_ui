@@ -1,6 +1,6 @@
 use std::fmt::Debug;
 use macroquad::math::Rect;
-use crate::core::{Ctx, Phase, Element, UiPathStep};
+use crate::core::{Ctx, Phase, Element, UiPathStep, Dimension, GetSizeCtx};
 use crate::elements::name::{Name};
 use crate::elements::node::Node;
 
@@ -36,12 +36,26 @@ impl<Event> WidthFactory<Event> for Node<Event> {
     }
 }
 
-impl<Event> Element<Event> for Width {}
+impl<Event> Element<Event> for Width {
+    fn get_size(&self, dim: Dimension, ctx: GetSizeCtx) -> Option<Size1D> {
+        match dim {
+            Dimension::X => Some(self.0),
+            Dimension::Y => None,
+        }
+    }
+}
 
 #[derive(Debug, Copy, Clone)]
 pub struct Height(pub Size1D);
 
-impl<Event> Element<Event> for Height {}
+impl<Event> Element<Event> for Height {
+    fn get_size(&self, dim: Dimension, ctx: GetSizeCtx) -> Option<Size1D> {
+        match dim {
+            Dimension::X => None,
+            Dimension::Y => Some(self.0),
+        }
+    }
+}
 
 pub trait HeightFactory<Event> {
     fn height(self, value: f32) -> Self;
@@ -92,7 +106,7 @@ impl<Event: Clone + Debug + 'static> Element<Event> for Group<Event> {
                 let sized_children: Vec<_> = self.children.iter().enumerate()
                     .map(|(i, it)| (it, calc_size_dimension(
                         it,
-                        Dimension::Vertical,
+                        Dimension::Y,
                         &ctx.step_down(UiPathStep::Index(i)),
                     )))
                     .collect();
@@ -130,7 +144,7 @@ impl<Event: Clone + Debug + 'static> Element<Event> for Group<Event> {
                     .enumerate()
                     .map(|(i, it)| (it, calc_size_dimension(
                         it,
-                        Dimension::Horizontal,
+                        Dimension::X,
                         &ctx.step_down(UiPathStep::Index(i)),
                     )))
                     .collect();
@@ -166,17 +180,76 @@ impl<Event: Clone + Debug + 'static> Element<Event> for Group<Event> {
             }
         }
     }
+
+    fn get_size(&self, dim: Dimension, ctx: GetSizeCtx) -> Option<Size1D> {
+        let ctx = ctx.step_down(UiPathStep::extract_path(node, "<node>"));
+        let dimension_value = match dim {
+            Dimension::X => node.components.get::<Width>().map(|it| it.0),
+            Dimension::Y => node.components.get::<Height>().map(|it| it.0),
+        };
+        match dimension_value {
+            Some(size) => size,
+            None => {
+                match node.components.get::<Group<Event>>() {
+                    None => panic!(
+                        "failed to resolve {:?} size of '{}' ({})",
+                        dim,
+                        node.components.get::<Name>().map(|it| it.0).unwrap_or("unknown"),
+                        ctx.backtrace(),
+                    ),
+                    Some(group) => {
+                        let merge_strategy = match dim {
+                            Dimension::X => match group.layout {
+                                Layout::Layered => MergeMode::Max,
+                                Layout::Vertical => MergeMode::Max,
+                                Layout::Horizontal => MergeMode::Sum,
+                            }
+                            Dimension::Y => match group.layout {
+                                Layout::Layered => MergeMode::Max,
+                                Layout::Vertical => MergeMode::Sum,
+                                Layout::Horizontal => MergeMode::Max,
+                            }
+                        };
+                        match merge_strategy {
+                            MergeMode::Max => {
+                                group.children.iter().enumerate()
+                                    .map(|(i, it)| calc_size_dimension(it, dim, &ctx.step_down(UiPathStep::Index(i))))
+                                    .reduce(|a, b| {
+                                        match a {
+                                            Size1D::Fixed(a) => match b {
+                                                Size1D::Fixed(b) => Size1D::Fixed(a.max(b)),
+                                                Size1D::Stretch => Size1D::Stretch
+                                            }
+                                            Size1D::Stretch => Size1D::Stretch,
+                                        }
+                                    })
+                                    .unwrap_or(Size1D::Stretch)
+                            }
+                            MergeMode::Sum => {
+                                group.children.iter().enumerate()
+                                    .map(|(i, it)| calc_size_dimension(it, dim, &ctx.step_down(UiPathStep::Index(i))))
+                                    .reduce(|a, b| {
+                                        match a {
+                                            Size1D::Fixed(a) => match b {
+                                                Size1D::Fixed(b) => Size1D::Fixed(a + b),
+                                                Size1D::Stretch => Size1D::Stretch,
+                                            }
+                                            Size1D::Stretch => Size1D::Stretch
+                                        }
+                                    })
+                                    .unwrap_or(Size1D::Stretch)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 enum MergeMode {
     Max,
     Sum,
-}
-
-#[derive(Copy, Clone, Debug)]
-enum Dimension {
-    Horizontal,
-    Vertical,
 }
 
 fn calc_size_dimension<Event>(
@@ -188,8 +261,8 @@ fn calc_size_dimension<Event>(
 {
     let ctx = ctx.step_down(UiPathStep::extract_path(node, "<node>"));
     let dimension_value = match dimension {
-        Dimension::Horizontal => node.components.get::<Width>().map(|it| it.0),
-        Dimension::Vertical => node.components.get::<Height>().map(|it| it.0),
+        Dimension::X => node.components.get::<Width>().map(|it| it.0),
+        Dimension::Y => node.components.get::<Height>().map(|it| it.0),
     };
     match dimension_value {
         Some(size) => size,
@@ -203,12 +276,12 @@ fn calc_size_dimension<Event>(
                 ),
                 Some(group) => {
                     let merge_strategy = match dimension {
-                        Dimension::Horizontal => match group.layout {
+                        Dimension::X => match group.layout {
                             Layout::Layered => MergeMode::Max,
                             Layout::Vertical => MergeMode::Max,
                             Layout::Horizontal => MergeMode::Sum,
                         }
-                        Dimension::Vertical => match group.layout {
+                        Dimension::Y => match group.layout {
                             Layout::Layered => MergeMode::Max,
                             Layout::Vertical => MergeMode::Sum,
                             Layout::Horizontal => MergeMode::Max,

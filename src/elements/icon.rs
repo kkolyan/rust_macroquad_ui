@@ -2,8 +2,9 @@ use macroquad::color::Color;
 use macroquad::math::{Rect, Vec2};
 use macroquad::texture::{draw_texture_ex, DrawTextureParams, Texture2D};
 
-use crate::core::{Ctx, Element, Phase};
+use crate::core::{Ctx, Dimension, Element, GetSizeCtx, Phase, UiPathStep};
 use crate::elements::common::{AlignX, AlignY};
+use crate::elements::group::Size1D;
 
 #[derive(Debug, Copy, Clone)]
 pub struct Icon {
@@ -38,7 +39,7 @@ impl<Event> Element<Event> for Icon {
     fn do_phase(&self, ctx: Ctx<Event>) {
         match ctx.phase {
             Phase::Draw => {
-                let size = self.dest_size.unwrap_or_else(|| Vec2::new(self.texture.width(), self.texture.height()));
+                let size = self.self_size();
                 let pos = Vec2::new(
                     match self.align_x {
                         AlignX::Left => ctx.area.x,
@@ -62,5 +63,20 @@ impl<Event> Element<Event> for Icon {
             }
             Phase::CollectEvents { .. } => {}
         }
+    }
+
+    fn get_size(&self, dim: Dimension, ctx: GetSizeCtx) -> Option<Size1D>{
+        let size = self.self_size();
+        let value = match dim {
+            Dimension::X => size.x,
+            Dimension::Y => size.y,
+        };
+        Some(Size1D::Fixed(value))
+    }
+}
+
+impl Icon {
+    fn self_size(&self) -> Vec2 {
+        self.dest_size.unwrap_or_else(|| Vec2::new(self.texture.width(), self.texture.height()))
     }
 }

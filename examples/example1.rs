@@ -33,6 +33,7 @@ async fn main() {
                     Node::new().name("stretch")
                         .width(0.0)
                         .height_stretch(),
+                    Node::new().name(""),
                     Node::new().name("items panel").group(Layout::Horizontal, vec![
                         Node::new()
                             .name("items list")

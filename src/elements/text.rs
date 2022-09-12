@@ -1,13 +1,15 @@
 use macroquad::color::Color;
 use macroquad::math::Vec2;
+use macroquad::prelude::TextDimensions;
 use macroquad::text::draw_text;
 use macroquad::text::measure_text;
 
-use crate::core::{Ctx, Element, Phase};
+use crate::core::{Ctx, Dimension, Element, GetSizeCtx, Phase, UiPathStep};
 use crate::elements::node::Node;
 
 use crate::elements::common::AlignY;
 use crate::elements::common::AlignX;
+use crate::elements::group::Size1D;
 
 #[derive(Debug, Clone)]
 pub struct Text {
@@ -39,7 +41,7 @@ impl<Event> Element<Event> for Text {
         match ctx.phase {
             Phase::Draw => {
                 let text = self.value.as_str();
-                let size = measure_text(text, None, self.font_size as u16, 1.0);
+                let size = self.measure_self();
                 let pos = Vec2::new(
                     match self.align_x {
                         AlignX::Left => ctx.area.x,
@@ -56,5 +58,19 @@ impl<Event> Element<Event> for Text {
             }
             Phase::CollectEvents { .. } => {}
         }
+    }
+
+    fn get_size(&self, dim: Dimension, ctx: GetSizeCtx) -> Option<Size1D> {
+        let size = self.measure_self();
+        Some(Size1D::Fixed(match dim {
+            Dimension::X => size.width,
+            Dimension::Y => size.height,
+        }))
+    }
+}
+
+impl Text {
+    fn measure_self(&self) -> TextDimensions {
+        measure_text(self.value.as_str(), None, self.font_size as u16, 1.0)
     }
 }
