@@ -1,7 +1,10 @@
 use std::fmt::Debug;
-use crate::core::Element;
-use crate::elements::group::{GroupFactory, HeightFactory, Layout, Width, WidthFactory};
-use crate::elements::name::NameFactory;
+
+use crate::elements::group::GroupFactory;
+use crate::elements::group::HeightFactory;
+use crate::elements::group::Layout;
+use crate::elements::group::Width;
+use crate::elements::group::WidthFactory;
 use crate::elements::node::Node;
 
 pub struct MarginOffset {
@@ -54,15 +57,15 @@ pub trait MarginFactory<Event> {
 impl<Event: 'static +  Clone + Debug> MarginFactory<Event> for Node<Event> {
     fn margin(self, offset: MarginOffset, target: Node<Event>) -> Self {
         self.group(Layout::Horizontal, vec![
-            Node::new().name("frame left").width(offset.left).height(0.0),
-            Node::new()
+            Node::new("frame left").width(offset.left).height(0.0),
+            Node::new("frame central column")
                 .add_component(*target.components.get::<Width>().expect("Width required for margin target"))
                 .group(Layout::Vertical, vec![
-                    Node::new().name("frame top").height(offset.top).width(0.0),
+                    Node::new("frame top").height(offset.top).width(0.0),
                     target,
-                    Node::new().name("frame bottom").height(offset.bottom).width(0.0),
+                    Node::new("frame bottom").height(offset.bottom).width(0.0),
                 ]),
-            Node::new().name("frame right").width(offset.right).height(0.0),
+            Node::new("frame right").width(offset.right).height(0.0),
         ])
     }
 }

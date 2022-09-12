@@ -1,12 +1,13 @@
-use std::any::TypeId;
 use std::cell::RefCell;
-use std::collections::{HashSet, VecDeque};
+use std::collections::HashSet;
+use std::collections::VecDeque;
 use std::fmt::Debug;
 use std::rc::Rc;
+
 use macroquad::math::Rect;
-use macroquad::prelude::{screen_height, screen_width};
-use crate::elements::name::Name;
-use crate::elements::node::Node;
+use macroquad::window::screen_height;
+use macroquad::window::screen_width;
+
 use crate::make_bounded_composite;
 
 make_bounded_composite! {pub, ComponentSet<Event>, Element<Event>}
@@ -36,17 +37,11 @@ pub enum UiPathStep {
     Index(usize),
 }
 
-impl UiPathStep {
-    pub fn extract_path<Event>(node: &Node<Event>, default: &'static str) -> UiPathStep {
-        UiPathStep::Name(node.components.get::<Name>().map(|it| it.0).unwrap_or(default))
-    }
-}
-
 pub trait Element<Event> {
     fn do_phase(&self, _ctx: Ctx<Event>) {}
 }
 
-pub fn collect_layer_events<Event: 'static +  Clone, Root: Element<Event>>(layer_root: &Root) -> Vec<Event> {
+pub fn collect_layer_events<Event: 'static + Clone, Root: Element<Event>>(layer_root: &Root) -> Vec<Event> {
     let events = Rc::new(RefCell::from(vec![]));
     let events2 = events.clone();
     layer_root.do_phase(Ctx::new(
@@ -54,7 +49,7 @@ pub fn collect_layer_events<Event: 'static +  Clone, Root: Element<Event>>(layer
         1.0,
         Phase::CollectEvents {
             on_event: Rc::new(move |it| events2.borrow_mut().push(it.clone()))
-        }
+        },
     ));
     events.take()
 }
@@ -63,14 +58,14 @@ pub fn draw_layer<Event: Clone, Root: Element<Event>>(layer_root: &Root) {
     layer_root.do_phase(Ctx::new(Rect::new(0.0, 0.0, screen_width(), screen_height()), 1.0, Phase::Draw));
 }
 
-impl <Event: Clone> Ctx<Event> {
+impl<Event: Clone> Ctx<Event> {
     pub fn new(area: Rect, scale: f32, phase: Phase<Event>) -> Self {
         Ctx {
             area,
             scale,
             phase,
             flags: Default::default(),
-            path: Default::default()
+            path: Default::default(),
         }
     }
 

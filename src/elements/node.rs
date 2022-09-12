@@ -3,12 +3,20 @@ use crate::core::{ComponentSet, Ctx, Element};
 
 #[derive(Debug, Clone)]
 pub struct Node<Event> {
+    pub name: Option<&'static str>,
     pub components: ComponentSet<Event>,
 }
 
 impl<Event> Node<Event> {
-    pub fn new() -> Self {
+    pub fn anon() -> Self {
         Node {
+            name: None,
+            components: ComponentSet::new(),
+        }
+    }
+    pub fn new(name: &'static str) -> Self {
+        Node {
+            name: Some(name),
             components: ComponentSet::new(),
         }
     }

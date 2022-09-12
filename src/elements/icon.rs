@@ -1,9 +1,15 @@
 use macroquad::color::Color;
-use macroquad::math::{Rect, Vec2};
-use macroquad::texture::{draw_texture_ex, DrawTextureParams, Texture2D};
+use macroquad::math::Rect;
+use macroquad::math::Vec2;
+use macroquad::texture::DrawTextureParams;
+use macroquad::texture::draw_texture_ex;
+use macroquad::texture::Texture2D;
 
-use crate::core::{Ctx, Element, Phase};
-use crate::elements::common::{AlignX, AlignY};
+use crate::core::Element;
+use crate::core::Ctx;
+use crate::core::Phase;
+use crate::elements::common::AlignX;
+use crate::elements::common::AlignY;
 
 #[derive(Debug, Copy, Clone)]
 pub struct Icon {
@@ -55,7 +61,7 @@ impl<Event> Element<Event> for Icon {
                     dest_size: Some(size),
                     source: self.region_norm.map(|it| Rect::new(it.x * size.x, it.y * size.y, it.w * size.x, it.h * size.y)),
                     rotation: 0.0,
-                    flip_x: self.flip_y,
+                    flip_x: self.flip_x,
                     flip_y: self.flip_y,
                     pivot: self.pivot_norm.map(|it| it * size),
                 });

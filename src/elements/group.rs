@@ -1,7 +1,8 @@
 use std::fmt::Debug;
 use macroquad::math::Rect;
-use crate::core::{Ctx, Phase, Element, UiPathStep};
-use crate::elements::name::{Name};
+use crate::core::Element;
+use crate::core::Ctx;
+use crate::core::UiPathStep;
 use crate::elements::node::Node;
 
 #[derive(Debug, Copy, Clone)]
@@ -129,7 +130,7 @@ impl<Event: Clone + Debug + 'static> Group<Event> {
             };
             child.do_phase(ctx
                 .step_down(UiPathStep::Index(i))
-                .step_down(UiPathStep::extract_path(child, "<node>"))
+                .step_down(UiPathStep::Name(child.name.unwrap_or("<node>")))
                 .clone_with(|ctx| ctx.area = Rect::new(
                     match dimension {
                         Dimension::Horizontal => offset,
@@ -153,11 +154,6 @@ impl<Event: Clone + Debug + 'static> Group<Event> {
     }
 }
 
-enum MergeMode {
-    Max,
-    Sum,
-}
-
 #[derive(Copy, Clone, Debug)]
 enum Dimension {
     Horizontal,
@@ -171,7 +167,7 @@ fn calc_size_dimension<Event>(
 ) -> Size1D
     where Event: Clone + Debug + 'static
 {
-    let ctx = ctx.step_down(UiPathStep::extract_path(node, "<node>"));
+    let ctx = ctx.step_down(UiPathStep::Name(node.name.unwrap_or("<node>")));
     let dimension_value = match dimension {
         Dimension::Horizontal => node.components.get::<Width>().map(|it| it.0),
         Dimension::Vertical => node.components.get::<Height>().map(|it| it.0),
@@ -182,7 +178,7 @@ fn calc_size_dimension<Event>(
             None => panic!(
                 "failed to resolve {:?} size of '{}' ({})",
                 dimension,
-                node.components.get::<Name>().map(|it| it.0).unwrap_or("unknown"),
+                node.name.unwrap_or("unknown"),
                 ctx.backtrace(),
             ),
             Some(group) => {
