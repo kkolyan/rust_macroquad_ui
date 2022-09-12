@@ -5,14 +5,16 @@
         #[derive(core::clone::Clone, std::fmt::Debug)]
         $vis struct $struct_name$(<$struct_name_param>)? {
             target: crate::composite::Composite,
-            ptrs: std::collections::HashMap<std::any::TypeId, *const dyn $bound$(<$bound_param>)?>,
+            ptr_indices: std::collections::HashMap<std::any::TypeId, usize>,
+            ptrs: Vec<*const dyn $bound$(<$bound_param>)?>,
         }
 
         impl $(<$struct_name_param>)? $struct_name$(<$struct_name_param>)? {
             pub fn new() -> $struct_name$(<$struct_name_param>)? {
                 $struct_name {
                     target: crate::composite::Composite::new(),
-                    ptrs: std::collections::HashMap::new(),
+                    ptr_indices: std::collections::HashMap::new(),
+                    ptrs: vec![],
                 }
             }
 
@@ -21,29 +23,32 @@
             }
 
             pub fn remove<T: $bound$(<$bound_param>)? + Clone + std::fmt::Debug + Sized + 'static>(&mut self) -> Option<T> {
-                self.ptrs.remove(&std::any::TypeId::of::<T>());
-                self.target.remove::<T>()
+                if let Some(prev_index) = self.ptr_indices.get(&std::any::TypeId::of::<T>()).cloned() {
+                    self.ptr_indices.remove(&std::any::TypeId::of::<T>());
+                    self.ptrs.remove(prev_index);
+                    self.target.remove::<T>()
+                } else {
+                    None
+                }
             }
 
             pub fn put<T: $bound$(<$bound_param>)? + Clone + std::fmt::Debug + 'static>(&mut self, value: T) {
+                self.remove::<T>();
                 self.target.put::<T>(value);
-                self.ptrs.insert(std::any::TypeId::of::<T>(), self.target.get::<T>().unwrap());
+                self.ptrs.push(self.target.get::<T>().unwrap());
+                self.ptr_indices.insert(std::any::TypeId::of::<T>(), self.ptrs.len() - 1);
             }
 
             pub fn iter<'a>(&'a self) -> std::iter::Map<
-                std::collections::hash_map::Iter<
+                std::slice::Iter<
                     'a,
-                    std::any::TypeId,
                     *const dyn $bound$(<$bound_param>)?
                 >,
                 fn(
-                    (
-                        &'a std::any::TypeId,
-                        &'a *const dyn $bound$(<$bound_param>)?
-                    )
+                    &'a *const dyn $bound$(<$bound_param>)?
                 ) -> &'a dyn $bound$(<$bound_param>)?
             > {
-                self.ptrs.iter().map(|(_, value)| unsafe { value.as_ref().unwrap() })
+                self.ptrs.iter().map(|value| unsafe { value.as_ref().unwrap() })
             }
         }
     };

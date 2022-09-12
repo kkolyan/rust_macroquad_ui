@@ -28,7 +28,7 @@ impl<Event> Element<Event> for Background {
     fn do_phase(&self, ctx: Ctx<Event>) {
         match ctx.phase {
             Phase::Draw => {
-                draw_rectangle(ctx.area.x, ctx.area.y, ctx.area.w, ctx.area.y, self.color);
+                draw_rectangle(ctx.area.x, ctx.area.y, ctx.area.w, ctx.area.h, self.color);
             }
             Phase::CollectEvents { .. } => {}
         }

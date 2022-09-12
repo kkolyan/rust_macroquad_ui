@@ -22,15 +22,15 @@ pub enum Size1D {
 
 pub trait WidthFactory<Event> {
     fn width(self, value: f32) -> Self;
-    fn stretch(self) -> Self;
+    fn width_stretch(self) -> Self;
 }
 
-impl <Event> WidthFactory<Event> for Node<Event> {
+impl<Event> WidthFactory<Event> for Node<Event> {
     fn width(self, value: f32) -> Self {
         self.add_component(Width(Size1D::Fixed(value)))
     }
 
-    fn stretch(self) -> Self {
+    fn width_stretch(self) -> Self {
         self.add_component(Width(Size1D::Stretch))
     }
 }
@@ -44,15 +44,15 @@ impl<Event> Element<Event> for Height {}
 
 pub trait HeightFactory<Event> {
     fn height(self, value: f32) -> Self;
-    fn stretch(self) -> Self;
+    fn height_stretch(self) -> Self;
 }
 
-impl <Event> HeightFactory<Event> for Node<Event> {
+impl<Event> HeightFactory<Event> for Node<Event> {
     fn height(self, value: f32) -> Self {
         self.add_component(Height(Size1D::Fixed(value)))
     }
 
-    fn stretch(self) -> Self {
+    fn height_stretch(self) -> Self {
         self.add_component(Height(Size1D::Stretch))
     }
 }
@@ -67,7 +67,7 @@ pub trait GroupFactory<Event> {
     fn group(self, layout: Layout, children: Vec<Node<Event>>) -> Self;
 }
 
-impl <Event: 'static +  Clone + Debug> GroupFactory<Event> for Node<Event> {
+impl<Event: 'static + Clone + Debug> GroupFactory<Event> for Node<Event> {
     fn group(self, layout: Layout, children: Vec<Node<Event>>) -> Self {
         self.add_component(Group::new(layout, children))
     }
@@ -88,6 +88,20 @@ impl<Event: Clone> Element<Event> for Group<Event> {
                 }
             }
             Layout::Vertical => {
+                let stretch_size = {
+                    let mut total_size = 0.0;
+                    let mut stretch_count = 0;
+                    for child in &self.children {
+                        let width = child.components.get::<Height>()
+                            .expect("Height required for layout items")
+                            .0;
+                        match width {
+                            Size1D::Fixed(value) => total_size += value,
+                            Size1D::Stretch => stretch_count += 1,
+                        }
+                    }
+                    (ctx.area.h - total_size) / stretch_count as f32
+                };
                 let mut offset = ctx.area.y;
                 for child in &self.children {
                     let width = child.components.get::<Height>()
@@ -95,7 +109,7 @@ impl<Event: Clone> Element<Event> for Group<Event> {
                         .0;
                     let size = match width {
                         Size1D::Fixed(value) => value,
-                        Size1D::Stretch => todo!(),
+                        Size1D::Stretch => stretch_size,
                     };
                     child.do_phase(ctx.clone_with(|ctx| ctx.area = Rect::new(
                         ctx.area.x,
@@ -107,6 +121,20 @@ impl<Event: Clone> Element<Event> for Group<Event> {
                 }
             }
             Layout::Horizontal => {
+                let stretch_size = {
+                    let mut total_size = 0.0;
+                    let mut stretch_count = 0;
+                    for child in &self.children {
+                        let width = child.components.get::<Width>()
+                            .expect("Width required for layout items")
+                            .0;
+                        match width {
+                            Size1D::Fixed(value) => total_size += value,
+                            Size1D::Stretch => stretch_count += 1,
+                        }
+                    }
+                    (ctx.area.w - total_size) / stretch_count as f32
+                };
                 let mut offset = ctx.area.x;
                 for child in &self.children {
                     let width = child.components.get::<Width>()
@@ -114,7 +142,7 @@ impl<Event: Clone> Element<Event> for Group<Event> {
                         .0;
                     let size = match width {
                         Size1D::Fixed(value) => value,
-                        Size1D::Stretch => todo!()
+                        Size1D::Stretch => stretch_size,
                     };
                     child.do_phase(ctx.clone_with(|ctx| ctx.area = Rect::new(
                         offset,
