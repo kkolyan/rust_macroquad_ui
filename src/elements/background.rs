@@ -20,7 +20,7 @@ pub trait BackgroundFactory<Event> {
 
 impl <Event> BackgroundFactory<Event> for Node<Event> {
     fn background_from_color(self, color: Color) -> Self {
-        self.imbue(Background::from(color))
+        self.add_component(Background::from(color))
     }
 }
 

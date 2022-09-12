@@ -13,7 +13,7 @@ impl<Event> Node<Event> {
         }
     }
 
-    pub fn imbue<T: Element<Event> + Clone + Debug + 'static>(mut self, feature: T) -> Self {
+    pub fn add_component<T: Element<Event> + Clone + Debug + 'static>(mut self, feature: T) -> Self {
         self.components.put(feature);
         self
     }

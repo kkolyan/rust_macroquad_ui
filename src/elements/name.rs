@@ -10,7 +10,7 @@ pub trait NameFactory<Event> {
 
 impl <Event> NameFactory<Event> for Node<Event> {
     fn name<S: NodeName>(self, name: S) -> Self {
-        self.imbue(Name(name.get_node_name()))
+        self.add_component(Name(name.get_node_name()))
     }
 }
 

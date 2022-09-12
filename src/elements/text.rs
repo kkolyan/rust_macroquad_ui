@@ -24,7 +24,7 @@ pub trait TextFactory<Event> {
 
 impl <Event> TextFactory<Event> for Node<Event> {
     fn text(self, value: String, font_size: f32, color: Color, align_x: AlignX, align_y: AlignY) -> Self {
-        self.imbue(Text {
+        self.add_component(Text {
             value,
             font_size,
             color,

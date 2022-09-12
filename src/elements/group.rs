@@ -11,32 +11,49 @@ pub enum Layout {
 }
 
 #[derive(Debug, Copy, Clone)]
-pub struct Width(pub f32);
+pub struct Width(pub Size1D);
+
+
+#[derive(Debug, Copy, Clone)]
+pub enum Size1D {
+    Fixed(f32),
+    Stretch,
+}
 
 pub trait WidthFactory<Event> {
     fn width(self, value: f32) -> Self;
+    fn stretch(self) -> Self;
 }
 
 impl <Event> WidthFactory<Event> for Node<Event> {
     fn width(self, value: f32) -> Self {
-        self.imbue(Width(value))
+        self.add_component(Width(Size1D::Fixed(value)))
+    }
+
+    fn stretch(self) -> Self {
+        self.add_component(Width(Size1D::Stretch))
     }
 }
 
 impl<Event> Element<Event> for Width {}
 
 #[derive(Debug, Copy, Clone)]
-pub struct Height(pub f32);
+pub struct Height(pub Size1D);
 
 impl<Event> Element<Event> for Height {}
 
 pub trait HeightFactory<Event> {
     fn height(self, value: f32) -> Self;
+    fn stretch(self) -> Self;
 }
 
 impl <Event> HeightFactory<Event> for Node<Event> {
     fn height(self, value: f32) -> Self {
-        self.imbue(Height(value))
+        self.add_component(Height(Size1D::Fixed(value)))
+    }
+
+    fn stretch(self) -> Self {
+        self.add_component(Height(Size1D::Stretch))
     }
 }
 
@@ -52,7 +69,7 @@ pub trait GroupFactory<Event> {
 
 impl <Event: 'static +  Clone + Debug> GroupFactory<Event> for Node<Event> {
     fn group(self, layout: Layout, children: Vec<Node<Event>>) -> Self {
-        self.imbue(Group::new(layout, children))
+        self.add_component(Group::new(layout, children))
     }
 }
 
@@ -73,13 +90,17 @@ impl<Event: Clone> Element<Event> for Group<Event> {
             Layout::Vertical => {
                 let mut offset = ctx.area.y;
                 for child in &self.children {
-                    let size = child.components.get::<Height>()
+                    let width = child.components.get::<Height>()
                         .expect("Height required for layout items")
-                        .0.clone();
+                        .0;
+                    let size = match width {
+                        Size1D::Fixed(value) => value,
+                        Size1D::Stretch => todo!(),
+                    };
                     child.do_phase(ctx.clone_with(|ctx| ctx.area = Rect::new(
-                        ctx.area.x.clone(),
-                        offset.clone(),
-                        ctx.area.w.clone(),
+                        ctx.area.x,
+                        offset,
+                        ctx.area.w,
                         size,
                     )));
                     offset += size;
@@ -88,14 +109,18 @@ impl<Event: Clone> Element<Event> for Group<Event> {
             Layout::Horizontal => {
                 let mut offset = ctx.area.x;
                 for child in &self.children {
-                    let size = child.components.get::<Width>()
+                    let width = child.components.get::<Width>()
                         .expect(" required for layout items")
-                        .0.clone();
+                        .0;
+                    let size = match width {
+                        Size1D::Fixed(value) => value,
+                        Size1D::Stretch => todo!()
+                    };
                     child.do_phase(ctx.clone_with(|ctx| ctx.area = Rect::new(
-                        offset.clone(),
-                        ctx.area.y.clone(),
+                        offset,
+                        ctx.area.y,
                         size,
-                        ctx.area.h.clone(),
+                        ctx.area.h,
                     )));
                     offset += size;
                 }
