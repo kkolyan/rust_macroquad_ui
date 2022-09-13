@@ -7,10 +7,9 @@ use macroquad::input::is_key_pressed;
 use macroquad::input::KeyCode::Escape;
 use macroquad::window::clear_background;
 use macroquad::window::next_frame;
+use rust_macroquad_ui::basic_composites::margin::FluentMargin;
 
 use rust_macroquad_ui::fluent_primitives::FluentPrimitives;
-use rust_macroquad_ui::primitives::group::Layout;
-use rust_macroquad_ui::primitives::margin::MarginOffset;
 use rust_macroquad_ui::primitives::node::Node;
 use rust_macroquad_ui::primitives::text::TextStyle;
 
@@ -55,13 +54,13 @@ fn right_bottom_panel() -> Node<Event> {
     Node::new("margin")
         .color_fill(WHITE)
         .margin(
-            MarginOffset::from(8.0),
+            8.0,
             Node::new("right bottom panel")
                 .horizontal_group(
                     [RED, ORANGE, YELLOW, GREEN, BLUE, DARKBLUE, PURPLE].iter()
                         .map(|color| Node::new("color icon")
                             .margin(
-                                MarginOffset::from((8.0, 0.0)),
+                                (8.0, 0.0),
                                 Node::new("icon").color_fill(*color).width(32.0).height(32.0),
                             )).collect(),
                 ),
@@ -75,7 +74,7 @@ fn left_panel(text_1: TextStyle) -> Node<Event> {
         .vertical_group(vec![
             Node::new("minimap frame")
                 .margin(
-                    MarginOffset::from(16.0),
+                    16.0,
                     Node::new("minimap sub-frame")
                         .vertical_group(vec![
                             Node::new("title line")
@@ -100,7 +99,7 @@ fn left_panel(text_1: TextStyle) -> Node<Event> {
                 .height_stretch(),
             Node::new("item box")
                 .margin(
-                    MarginOffset::from(8.0),
+                    8.0,
                     Node::new("items panel").horizontal_group(vec![
                         Node::new("items list")
                             .color_fill(RED)

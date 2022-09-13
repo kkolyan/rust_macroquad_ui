@@ -7,7 +7,6 @@ use crate::primitives::group::Layout;
 use crate::primitives::group::Height;
 use crate::primitives::group::Group;
 use crate::primitives::group::Width;
-use crate::primitives::margin::MarginOffset;
 use crate::primitives::node::Node;
 use crate::primitives::text::Text;
 use crate::primitives::text::TextStyle;
@@ -24,7 +23,6 @@ pub trait FluentPrimitives<Event> {
     fn layers(self, children: Vec<Node<Event>>) -> Self;
     fn horizontal_group(self, children: Vec<Node<Event>>) -> Self;
     fn vertical_group(self, children: Vec<Node<Event>>) -> Self;
-    fn margin(self, offset: MarginOffset, target: Node<Event>) -> Self;
     fn text<S: ToText>(self, value: S, style: TextStyle) -> Self;
 }
 
@@ -67,20 +65,6 @@ impl<Event: Clone + Debug + 'static> FluentPrimitives<Event> for Node<Event> {
 
     fn vertical_group(self, children: Vec<Node<Event>>) -> Self {
         self.add_component(Group::new(Layout::Vertical, children))
-    }
-
-    fn margin(self, offset: MarginOffset, target: Node<Event>) -> Self {
-        self.horizontal_group(vec![
-            Node::new("frame left").width(offset.left).height(0.0),
-            Node::new("frame central column")
-                // .add_component(*target.components.get::<Width>().unwrap_or_else(|| panic!("Width required for margin target {}", target.name.unwrap_or("<node>"))))
-                .vertical_group(vec![
-                    Node::new("frame top").height(offset.top).width(0.0),
-                    target,
-                    Node::new("frame bottom").height(offset.bottom).width(0.0),
-                ]),
-            Node::new("frame right").width(offset.right).height(0.0),
-        ])
     }
 
     fn text<S: ToText>(self, value: S, style: TextStyle) -> Self {
