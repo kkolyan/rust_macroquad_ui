@@ -4,7 +4,7 @@ use crate::core::Element;
 use crate::core::Ctx;
 use crate::core::UiPathStep;
 use crate::elements::destretch::{DeStretch, DimensionMask};
-use crate::elements::node::{Node, NodePlugin};
+use crate::elements::node::{Node};
 
 #[derive(Debug, Copy, Clone)]
 pub enum Layout {
@@ -40,14 +40,10 @@ impl<Event: Clone> WidthFactory<Event> for Node<Event> {
 
 impl<Event> Element<Event> for Width {}
 
-impl<Event: Clone> NodePlugin<Event> for Width {}
-
 #[derive(Debug, Copy, Clone)]
 pub struct Height(pub Size1D);
 
 impl<Event> Element<Event> for Height {}
-
-impl<Event: Clone> NodePlugin<Event> for Height {}
 
 pub trait HeightFactory<Event> {
     fn height(self, value: f32) -> Self;
@@ -99,8 +95,6 @@ impl<Event: Clone + Debug + 'static> Element<Event> for Group<Event> {
         }
     }
 }
-
-impl<Event: Clone + Debug + 'static> NodePlugin<Event> for Group<Event> {}
 
 impl<Event: Clone + Debug + 'static> Group<Event> {
     fn do_layout(&self, ctx: &Ctx<Event>, dimension: Dimension) {

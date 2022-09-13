@@ -7,14 +7,6 @@ pub struct Node<Event> {
     pub components: ComponentSet<Event>,
 }
 
-pub trait NodePlugin<Event: Clone>: Element<Event> {
-    fn attach_to(self, node: Node<Event>) -> Node<Event>
-        where Self: Sized + Clone + Debug + 'static
-    {
-        node.add_component_raw(self)
-    }
-}
-
 impl<Event: Clone> Node<Event> {
     pub fn anon() -> Self {
         Node {
@@ -29,11 +21,7 @@ impl<Event: Clone> Node<Event> {
         }
     }
 
-    pub fn add_component<T: NodePlugin<Event> + Clone + Debug + 'static>(self, feature: T) -> Self {
-        feature.attach_to(self)
-    }
-
-    pub fn add_component_raw<T: Element<Event> + Clone + Debug + 'static>(mut self, feature: T) -> Self {
+    pub fn add_component<T: Element<Event> + Clone + Debug + 'static>(mut self, feature: T) -> Self {
         self.components.put(feature);
         self
     }

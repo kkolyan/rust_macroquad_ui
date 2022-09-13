@@ -10,7 +10,6 @@ use crate::core::Phase;
 use crate::elements::group::HeightFactory;
 use crate::elements::group::WidthFactory;
 use crate::elements::node::Node;
-use crate::elements::node::NodePlugin;
 
 #[derive(Debug, Clone)]
 pub struct Text {
@@ -28,22 +27,16 @@ pub struct TextStyle {
     pub color: Color,
 }
 
-impl <Event: Clone> NodePlugin<Event> for Text {
-    fn attach_to(self, node: Node<Event>) -> Node<Event> {
-        let size = self.measure_self();
-        let style = self.style;
-        node.add_component_raw(self)
-            .width(size.width)
-            .height(style.font_size)// because size.y varies depends on the presence of letters like "p"
-    }
-}
-
 impl <Event: Clone> TextFactory<Event> for Node<Event> {
     fn text<S: ToText>(self, value: S, style: TextStyle) -> Self {
-        self.add_component(Text {
+        let text = Text {
             value: value.to_text(),
             style,
-        })
+        };
+        let size = text.measure_self();
+        self.add_component(text)
+            .width(size.width)
+            .height(style.font_size)// because size.y varies depends on the presence of letters like "p"
     }
 }
 

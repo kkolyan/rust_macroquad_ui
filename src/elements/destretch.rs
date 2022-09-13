@@ -1,7 +1,7 @@
 use std::fmt::Debug;
 
 use crate::core::{Ctx, Element};
-use crate::elements::node::{Node, NodePlugin};
+use crate::elements::node::{Node};
 
 #[derive(Clone, Debug, Copy)]
 pub enum DimensionMask {
@@ -21,8 +21,6 @@ impl<Event: Clone> Element<Event> for DeStretch<Event> {
         self.target.do_phase(_ctx);
     }
 }
-
-impl<Event: Clone> NodePlugin<Event> for DeStretch<Event> {}
 
 pub trait DeStretchFactory<Event> {
     fn de_stretch(self, dimension: DimensionMask, node: Node<Event>) -> Self;
