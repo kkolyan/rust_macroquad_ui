@@ -3,6 +3,7 @@ use macroquad::math::Rect;
 use crate::core::Element;
 use crate::core::Ctx;
 use crate::core::UiPathStep;
+use crate::elements::destretch::{DeStretch, DimensionMask};
 use crate::elements::node::{Node, NodePlugin};
 
 #[derive(Debug, Copy, Clone)]
@@ -19,7 +20,7 @@ pub struct Width(pub Size1D);
 #[derive(Debug, Copy, Clone)]
 pub enum Size1D {
     Fixed(f32),
-    Stretch,
+    Stretch { fixed_part: f32 },
 }
 
 pub trait WidthFactory<Event> {
@@ -33,7 +34,7 @@ impl<Event: Clone> WidthFactory<Event> for Node<Event> {
     }
 
     fn width_stretch(self) -> Self {
-        self.add_component(Width(Size1D::Stretch))
+        self.add_component(Width(Size1D::Stretch { fixed_part: 0.0 }))
     }
 }
 
@@ -59,7 +60,7 @@ impl<Event: Clone> HeightFactory<Event> for Node<Event> {
     }
 
     fn height_stretch(self) -> Self {
-        self.add_component(Height(Size1D::Stretch))
+        self.add_component(Height(Size1D::Stretch { fixed_part: 0.0 }))
     }
 }
 
@@ -116,7 +117,10 @@ impl<Event: Clone + Debug + 'static> Group<Event> {
             for (_, size) in sized_children.iter().copied() {
                 match size {
                     Size1D::Fixed(value) => total_size += value,
-                    Size1D::Stretch => stretch_count += 1,
+                    Size1D::Stretch { fixed_part } => {
+                        total_size += fixed_part;
+                        stretch_count += 1;
+                    },
                 }
             }
             let forward_area_size = match dimension {
@@ -132,7 +136,7 @@ impl<Event: Clone + Debug + 'static> Group<Event> {
         for (i, (child, size)) in sized_children.iter().copied().enumerate() {
             let size = match size {
                 Size1D::Fixed(value) => value,
-                Size1D::Stretch => stretch_size,
+                Size1D::Stretch {fixed_part} => fixed_part + stretch_size,
             };
             child.do_phase(ctx
                 .step_down(UiPathStep::Index(i))
@@ -181,12 +185,41 @@ fn calc_size_dimension<Event>(
     match dimension_value {
         Some(size) => size,
         None => match node.components.get::<Group<Event>>() {
-            None => panic!(
-                "failed to resolve {:?} size of '{}' ({})",
-                dimension,
-                node.name.unwrap_or("unknown"),
-                ctx.backtrace(),
-            ),
+            None => match node.components.get::<DeStretch<Event>>() {
+                None => panic!(
+                    "failed to resolve {:?} size of '{}' ({})",
+                    dimension,
+                    node.name.unwrap_or("unknown"),
+                    ctx.backtrace(),
+                ),
+                Some(de_stretcher) => {
+                    let size = calc_size_dimension(&de_stretcher.target, dimension, &ctx.step_down(UiPathStep::Name("DeStretch")));
+                    let de_stretch = match dimension {
+                        Dimension::Horizontal => {
+                            match de_stretcher.dimension {
+                                DimensionMask::Horizontal => true,
+                                DimensionMask::Vertical => false,
+                                DimensionMask::Both => true,
+                            }
+                        }
+                        Dimension::Vertical => {
+                            match de_stretcher.dimension {
+                                DimensionMask::Horizontal => false,
+                                DimensionMask::Vertical => true,
+                                DimensionMask::Both => true,
+                            }
+                        }
+                    };
+                    if !de_stretch {
+                        size
+                    } else {
+                        match size {
+                            Size1D::Fixed(size) => Size1D::Fixed(size),
+                            Size1D::Stretch { fixed_part } => Size1D::Fixed(fixed_part),
+                        }
+                    }
+                }
+            },
             Some(group) => {
                 let merge_strategy = match dimension {
                     Dimension::Horizontal => match group.layout {
@@ -206,32 +239,42 @@ fn calc_size_dimension<Event>(
                         &ctx.step_down(UiPathStep::Index(i)),
                     ))
                     .reduce(merge_strategy)
-                    .unwrap_or(Size1D::Stretch)
+                    .unwrap_or(Size1D::Stretch {fixed_part: 0.0})
             }
         },
     }
 }
 
 impl Size1D {
-
     fn sum(a: Size1D, b: Size1D) -> Size1D {
-        match a {
-            Size1D::Fixed(a) => match b {
-                Size1D::Fixed(b) => Size1D::Fixed(a + b),
-                Size1D::Stretch => Size1D::Stretch,
-            }
-            Size1D::Stretch => Size1D::Stretch
+        let fixed_part = a.get_fixed_part() + b.get_fixed_part();
+        if a.is_stretch() || b.is_stretch() {
+            Size1D::Stretch { fixed_part }
+        } else {
+            Size1D::Fixed(fixed_part)
         }
     }
 
     fn max(a: Size1D, b: Size1D) -> Size1D {
-        match a {
-            Size1D::Fixed(a) => match b {
-                Size1D::Fixed(b) => Size1D::Fixed(a.max(b)),
-                Size1D::Stretch => Size1D::Stretch
-            }
-            Size1D::Stretch => Size1D::Stretch,
+        let fixed_part = a.get_fixed_part().max(b.get_fixed_part());
+        if a.is_stretch() || b.is_stretch() {
+            Size1D::Stretch { fixed_part }
+        } else {
+            Size1D::Fixed(fixed_part)
         }
     }
 
+    fn is_stretch(&self) -> bool {
+        match self {
+            Size1D::Fixed(_) => false,
+            Size1D::Stretch { .. } => true,
+        }
+    }
+
+    fn get_fixed_part(&self) -> f32 {
+        *match self {
+            Size1D::Fixed(value) => value,
+            Size1D::Stretch { fixed_part } => fixed_part
+        }
+    }
 }
