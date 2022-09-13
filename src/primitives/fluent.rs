@@ -2,9 +2,7 @@ use macroquad::color::Color;
 use std::fmt::Debug;
 use crate::primitives::background::Background;
 
-use crate::primitives::destretch::DeStretch;
-use crate::primitives::destretch::DimensionMask;
-use crate::primitives::group::Size1D;
+use crate::primitives::group::Size;
 use crate::primitives::group::Layout;
 use crate::primitives::group::Height;
 use crate::primitives::group::Group;
@@ -17,11 +15,12 @@ use crate::primitives::text::ToText;
 
 pub trait PrimitivesFluentFactory<Event> {
     fn background_from_color(self, color: Color) -> Self;
-    fn de_stretch(self, dimension: DimensionMask, node: Node<Event>) -> Self;
     fn width(self, value: f32) -> Self;
     fn width_stretch(self) -> Self;
+    fn width_no_stretch(self) -> Self;
     fn height(self, value: f32) -> Self;
     fn height_stretch(self) -> Self;
+    fn height_no_stretch(self) -> Self;
     fn group(self, layout: Layout, children: Vec<Node<Event>>) -> Self;
     fn margin(self, offset: MarginOffset, target: Node<Event>) -> Self;
     fn text<S: ToText>(self, value: S, style: TextStyle) -> Self;
@@ -32,24 +31,28 @@ impl<Event: Clone + Debug + 'static> PrimitivesFluentFactory<Event> for Node<Eve
         self.add_component(Background::from(color))
     }
 
-    fn de_stretch(self, dimension: DimensionMask, target: Node<Event>) -> Self {
-        self.add_component(DeStretch { target, dimension })
-    }
-
     fn width(self, value: f32) -> Self {
-        self.add_component(Width(Size1D::Fixed(value)))
+        self.add_component(Width(Size::Fixed(value)))
     }
 
     fn width_stretch(self) -> Self {
-        self.add_component(Width(Size1D::Stretch { fixed_part: 0.0 }))
+        self.add_component(Width(Size::Stretch { fixed_part: 0.0 }))
+    }
+
+    fn width_no_stretch(self) -> Self {
+        self.add_component(Width(Size::RemoveStretch))
     }
 
     fn height(self, value: f32) -> Self {
-        self.add_component(Height(Size1D::Fixed(value)))
+        self.add_component(Height(Size::Fixed(value)))
     }
 
     fn height_stretch(self) -> Self {
-        self.add_component(Height(Size1D::Stretch { fixed_part: 0.0 }))
+        self.add_component(Height(Size::Stretch { fixed_part: 0.0 }))
+    }
+
+    fn height_no_stretch(self) -> Self {
+        self.add_component(Height(Size::RemoveStretch))
     }
 
     fn group(self, layout: Layout, children: Vec<Node<Event>>) -> Self {

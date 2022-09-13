@@ -8,7 +8,6 @@ use macroquad::input::KeyCode::Escape;
 use macroquad::window::clear_background;
 use macroquad::window::next_frame;
 
-use rust_macroquad_ui::primitives::destretch::DimensionMask;
 use rust_macroquad_ui::primitives::fluent::PrimitivesFluentFactory;
 use rust_macroquad_ui::primitives::group::Layout;
 use rust_macroquad_ui::primitives::margin::MarginOffset;
@@ -71,49 +70,47 @@ fn right_bottom_panel() -> Node<Event> {
 }
 
 fn lef_panel(text_1: TextStyle) -> Node<Event> {
-    Node::new("DeStretch").de_stretch(
-        DimensionMask::Horizontal,
-        Node::new("Left panel")
-            .background_from_color(GREEN)
-            .group(Layout::Vertical, vec![
-                Node::new("minimap frame")
-                    .margin(
-                        MarginOffset::from(16.0),
-                        Node::new("minimap sub-frame")
-                            .group(Layout::Vertical, vec![
-                                Node::new("title line")
-                                    .group(Layout::Horizontal, vec![
-                                        Node::new("left stretch")
-                                            .height(0.0)
-                                            .width_stretch(),
-                                        Node::new("map title")
-                                            .text("The map", text_1),
-                                        Node::new("left stretch")
-                                            .height(0.0)
-                                            .width_stretch(),
-                                    ]),
-                                Node::new("minimap")
-                                    .width(150.0)
-                                    .height(150.0)
-                                    .background_from_color(BLUE),
-                            ]),
-                    ),
-                Node::new("stretch")
-                    .width(0.0)
-                    .height_stretch(),
-                Node::new("item box")
-                    .margin(
-                        MarginOffset::from(8.0),
-                        Node::new("items panel").group(Layout::Horizontal, vec![
-                            Node::new("items list")
-                                .background_from_color(RED)
-                                .group(Layout::Vertical, (0..5)
-                                    .map(|i| Node::new("Item")
-                                        .text(format!("Item {}", i), text_1)
-                                    )
-                                    .collect()),
+    Node::new("Left panel")
+        .width_no_stretch()
+        .background_from_color(GREEN)
+        .group(Layout::Vertical, vec![
+            Node::new("minimap frame")
+                .margin(
+                    MarginOffset::from(16.0),
+                    Node::new("minimap sub-frame")
+                        .group(Layout::Vertical, vec![
+                            Node::new("title line")
+                                .group(Layout::Horizontal, vec![
+                                    Node::new("left stretch")
+                                        .height(0.0)
+                                        .width_stretch(),
+                                    Node::new("map title")
+                                        .text("The map", text_1),
+                                    Node::new("left stretch")
+                                        .height(0.0)
+                                        .width_stretch(),
+                                ]),
+                            Node::new("minimap")
+                                .width(150.0)
+                                .height(150.0)
+                                .background_from_color(BLUE),
                         ]),
-                    ),
-            ]),
-    )
+                ),
+            Node::new("stretch")
+                .width(0.0)
+                .height_stretch(),
+            Node::new("item box")
+                .margin(
+                    MarginOffset::from(8.0),
+                    Node::new("items panel").group(Layout::Horizontal, vec![
+                        Node::new("items list")
+                            .background_from_color(RED)
+                            .group(Layout::Vertical, (0..5)
+                                .map(|i| Node::new("Item")
+                                    .text(format!("Item {}", i), text_1)
+                                )
+                                .collect()),
+                    ]),
+                ),
+        ])
 }
