@@ -8,17 +8,12 @@ use macroquad::input::KeyCode::Escape;
 use macroquad::window::clear_background;
 use macroquad::window::next_frame;
 
-use rust_macroquad_ui::elements::background::BackgroundFactory;
-use rust_macroquad_ui::elements::destretch::{DeStretchFactory, DimensionMask};
-use rust_macroquad_ui::elements::group::GroupFactory;
-use rust_macroquad_ui::elements::group::HeightFactory;
-use rust_macroquad_ui::elements::group::Layout;
-use rust_macroquad_ui::elements::group::WidthFactory;
-use rust_macroquad_ui::elements::margin::MarginFactory;
-use rust_macroquad_ui::elements::margin::MarginOffset;
-use rust_macroquad_ui::elements::node::Node;
-use rust_macroquad_ui::elements::text::TextFactory;
-use rust_macroquad_ui::elements::text::TextStyle;
+use rust_macroquad_ui::primitives::destretch::DimensionMask;
+use rust_macroquad_ui::primitives::fluent::PrimitivesFluentFactory;
+use rust_macroquad_ui::primitives::group::Layout;
+use rust_macroquad_ui::primitives::margin::MarginOffset;
+use rust_macroquad_ui::primitives::node::Node;
+use rust_macroquad_ui::primitives::text::TextStyle;
 
 #[derive(Clone, Debug)]
 enum Event {}

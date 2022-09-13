@@ -3,8 +3,8 @@ use macroquad::math::Rect;
 use crate::core::Element;
 use crate::core::Ctx;
 use crate::core::UiPathStep;
-use crate::elements::destretch::{DeStretch, DimensionMask};
-use crate::elements::node::{Node};
+use crate::primitives::destretch::{DeStretch, DimensionMask};
+use crate::primitives::node::Node;
 
 #[derive(Debug, Copy, Clone)]
 pub enum Layout {
@@ -23,21 +23,6 @@ pub enum Size1D {
     Stretch { fixed_part: f32 },
 }
 
-pub trait WidthFactory<Event> {
-    fn width(self, value: f32) -> Self;
-    fn width_stretch(self) -> Self;
-}
-
-impl<Event: Clone> WidthFactory<Event> for Node<Event> {
-    fn width(self, value: f32) -> Self {
-        self.add_component(Width(Size1D::Fixed(value)))
-    }
-
-    fn width_stretch(self) -> Self {
-        self.add_component(Width(Size1D::Stretch { fixed_part: 0.0 }))
-    }
-}
-
 impl<Event> Element<Event> for Width {}
 
 #[derive(Debug, Copy, Clone)]
@@ -45,35 +30,10 @@ pub struct Height(pub Size1D);
 
 impl<Event> Element<Event> for Height {}
 
-pub trait HeightFactory<Event> {
-    fn height(self, value: f32) -> Self;
-    fn height_stretch(self) -> Self;
-}
-
-impl<Event: Clone> HeightFactory<Event> for Node<Event> {
-    fn height(self, value: f32) -> Self {
-        self.add_component(Height(Size1D::Fixed(value)))
-    }
-
-    fn height_stretch(self) -> Self {
-        self.add_component(Height(Size1D::Stretch { fixed_part: 0.0 }))
-    }
-}
-
 #[derive(Debug, Clone)]
 pub struct Group<Event> {
     layout: Layout,
     children: Vec<Node<Event>>,
-}
-
-pub trait GroupFactory<Event> {
-    fn group(self, layout: Layout, children: Vec<Node<Event>>) -> Self;
-}
-
-impl<Event: 'static + Clone + Debug> GroupFactory<Event> for Node<Event> {
-    fn group(self, layout: Layout, children: Vec<Node<Event>>) -> Self {
-        self.add_component(Group::new(layout, children))
-    }
 }
 
 impl<Event> Group<Event> {

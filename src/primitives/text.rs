@@ -7,37 +7,17 @@ use macroquad::text::measure_text;
 use crate::core::Ctx;
 use crate::core::Element;
 use crate::core::Phase;
-use crate::elements::group::HeightFactory;
-use crate::elements::group::WidthFactory;
-use crate::elements::node::Node;
 
 #[derive(Debug, Clone)]
 pub struct Text {
-    value: String,
-    style: TextStyle,
-}
-
-pub trait TextFactory<Event> {
-    fn text<S: ToText>(self, value: S, style: TextStyle) -> Self;
+    pub value: String,
+    pub style: TextStyle,
 }
 
 #[derive(Debug, Clone, Copy)]
 pub struct TextStyle {
     pub font_size: f32,
     pub color: Color,
-}
-
-impl <Event: Clone> TextFactory<Event> for Node<Event> {
-    fn text<S: ToText>(self, value: S, style: TextStyle) -> Self {
-        let text = Text {
-            value: value.to_text(),
-            style,
-        };
-        let size = text.measure_self();
-        self.add_component(text)
-            .width(size.width)
-            .height(style.font_size)// because size.y varies depends on the presence of letters like "p"
-    }
 }
 
 impl<Event> Element<Event> for Text {
@@ -55,7 +35,7 @@ impl<Event> Element<Event> for Text {
 }
 
 impl Text {
-    fn measure_self(&self) -> TextDimensions {
+    pub fn measure_self(&self) -> TextDimensions {
         measure_text(self.value.as_str(), None, self.style.font_size as u16, 1.0)
     }
 }

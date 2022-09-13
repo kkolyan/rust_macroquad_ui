@@ -2,7 +2,7 @@ use std::fmt::Debug;
 use macroquad::input::{is_mouse_button_down, mouse_position, MouseButton};
 use macroquad::math::Vec2;
 use crate::core::{Ctx, Element, Flag, UiPathStep, Phase};
-use crate::elements::node::Node;
+use crate::primitives::node::Node;
 
 #[derive(Debug, Clone)]
 pub struct MouseHandler<Event: Debug + Clone> {
