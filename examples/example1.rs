@@ -8,7 +8,7 @@ use macroquad::input::KeyCode::Escape;
 use macroquad::window::clear_background;
 use macroquad::window::next_frame;
 
-use rust_macroquad_ui::primitives::fluent::PrimitivesFluentFactory;
+use rust_macroquad_ui::fluent_primitives::FluentPrimitives;
 use rust_macroquad_ui::primitives::group::Layout;
 use rust_macroquad_ui::primitives::margin::MarginOffset;
 use rust_macroquad_ui::primitives::node::Node;
@@ -38,13 +38,13 @@ fn root() -> Node<Event> {
     };
 
     Node::<Event>::new("root")
-        .group(Layout::Horizontal, vec![
-            lef_panel(text_1),
+        .horizontal_group(vec![
+            left_panel(text_1),
             Node::new("stretch")
                 .height(0.0)
                 .width_stretch(),
             Node::new("Right block")
-                .group(Layout::Vertical, vec![
+                .vertical_group(vec![
                     Node::new("stretch").height_stretch().width(0.0),
                     right_bottom_panel(),
                 ]),
@@ -53,34 +53,33 @@ fn root() -> Node<Event> {
 
 fn right_bottom_panel() -> Node<Event> {
     Node::new("margin")
-        .background_from_color(WHITE)
+        .color_fill(WHITE)
         .margin(
             MarginOffset::from(8.0),
             Node::new("right bottom panel")
-                .group(
-                    Layout::Horizontal,
+                .horizontal_group(
                     [RED, ORANGE, YELLOW, GREEN, BLUE, DARKBLUE, PURPLE].iter()
                         .map(|color| Node::new("color icon")
                             .margin(
                                 MarginOffset::from((8.0, 0.0)),
-                                Node::new("icon").background_from_color(*color).width(32.0).height(32.0),
+                                Node::new("icon").color_fill(*color).width(32.0).height(32.0),
                             )).collect(),
                 ),
         )
 }
 
-fn lef_panel(text_1: TextStyle) -> Node<Event> {
+fn left_panel(text_1: TextStyle) -> Node<Event> {
     Node::new("Left panel")
         .width_no_stretch()
-        .background_from_color(GREEN)
-        .group(Layout::Vertical, vec![
+        .color_fill(GREEN)
+        .vertical_group(vec![
             Node::new("minimap frame")
                 .margin(
                     MarginOffset::from(16.0),
                     Node::new("minimap sub-frame")
-                        .group(Layout::Vertical, vec![
+                        .vertical_group(vec![
                             Node::new("title line")
-                                .group(Layout::Horizontal, vec![
+                                .horizontal_group(vec![
                                     Node::new("left stretch")
                                         .height(0.0)
                                         .width_stretch(),
@@ -93,7 +92,7 @@ fn lef_panel(text_1: TextStyle) -> Node<Event> {
                             Node::new("minimap")
                                 .width(150.0)
                                 .height(150.0)
-                                .background_from_color(BLUE),
+                                .color_fill(BLUE),
                         ]),
                 ),
             Node::new("stretch")
@@ -102,10 +101,10 @@ fn lef_panel(text_1: TextStyle) -> Node<Event> {
             Node::new("item box")
                 .margin(
                     MarginOffset::from(8.0),
-                    Node::new("items panel").group(Layout::Horizontal, vec![
+                    Node::new("items panel").horizontal_group(vec![
                         Node::new("items list")
-                            .background_from_color(RED)
-                            .group(Layout::Vertical, (0..5)
+                            .color_fill(RED)
+                            .vertical_group((0..5)
                                 .map(|i| Node::new("Item")
                                     .text(format!("Item {}", i), text_1)
                                 )

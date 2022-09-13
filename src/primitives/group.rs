@@ -13,25 +13,19 @@ pub enum Layout {
 }
 
 #[derive(Debug, Copy, Clone)]
-pub struct Width(pub Size);
+pub struct Width(pub Dimension);
 
 #[derive(Debug, Copy, Clone)]
-pub struct Height(pub Size);
+pub struct Height(pub Dimension);
 
 impl<Event> Element<Event> for Width {}
 impl<Event> Element<Event> for Height {}
 
 #[derive(Debug, Copy, Clone)]
-pub enum Size {
+pub enum Dimension {
     Fixed(f32),
     Stretch { fixed_part: f32 },
     RemoveStretch,
-}
-
-#[derive(Debug, Copy, Clone)]
-enum FinalSize {
-    Fixed(f32),
-    Stretch { fixed_part: f32 },
 }
 
 #[derive(Debug, Clone)]
@@ -54,14 +48,14 @@ impl<Event: Clone + Debug + 'static> Element<Event> for Group<Event> {
                     child.do_phase(ctx.clone());
                 }
             }
-            Layout::Vertical => self.do_layout(&ctx, Dimension::Vertical),
-            Layout::Horizontal => self.do_layout(&ctx, Dimension::Horizontal),
+            Layout::Vertical => self.do_layout(&ctx, DimensionKey::Vertical),
+            Layout::Horizontal => self.do_layout(&ctx, DimensionKey::Horizontal),
         }
     }
 }
 
 impl<Event: Clone + Debug + 'static> Group<Event> {
-    fn do_layout(&self, ctx: &Ctx<Event>, dimension: Dimension) {
+    fn do_layout(&self, ctx: &Ctx<Event>, dimension: DimensionKey) {
         let sized_children: Vec<_> = self.children.iter().enumerate()
             .map(|(i, it)| (it, calc_size_dimension(
                 it,
@@ -74,47 +68,47 @@ impl<Event: Clone + Debug + 'static> Group<Event> {
             let mut stretch_count = 0;
             for (_, size) in sized_children.iter().copied() {
                 match size {
-                    FinalSize::Fixed(value) => total_size += value,
-                    FinalSize::Stretch { fixed_part } => {
+                    CalculatedSize::Fixed(value) => total_size += value,
+                    CalculatedSize::Stretch { fixed_part } => {
                         total_size += fixed_part;
                         stretch_count += 1;
                     },
                 }
             }
             let forward_area_size = match dimension {
-                Dimension::Horizontal => ctx.area.w,
-                Dimension::Vertical => ctx.area.h,
+                DimensionKey::Horizontal => ctx.area.w,
+                DimensionKey::Vertical => ctx.area.h,
             };
             (forward_area_size - total_size) / stretch_count as f32
         };
         let mut offset = match dimension {
-            Dimension::Horizontal => ctx.area.x,
-            Dimension::Vertical => ctx.area.y,
+            DimensionKey::Horizontal => ctx.area.x,
+            DimensionKey::Vertical => ctx.area.y,
         };
         for (i, (child, size)) in sized_children.iter().copied().enumerate() {
             let size = match size {
-                FinalSize::Fixed(value) => value,
-                FinalSize::Stretch {fixed_part} => fixed_part + stretch_size,
+                CalculatedSize::Fixed(value) => value,
+                CalculatedSize::Stretch {fixed_part} => fixed_part + stretch_size,
             };
             child.do_phase(ctx
                 .step_down(UiPathStep::Index(i))
                 .step_down(UiPathStep::Name(child.name.unwrap_or("<node>")))
                 .clone_with(|ctx| ctx.area = Rect::new(
                     match dimension {
-                        Dimension::Horizontal => offset,
-                        Dimension::Vertical => ctx.area.x,
+                        DimensionKey::Horizontal => offset,
+                        DimensionKey::Vertical => ctx.area.x,
                     },
                     match dimension {
-                        Dimension::Horizontal => ctx.area.y,
-                        Dimension::Vertical => offset,
+                        DimensionKey::Horizontal => ctx.area.y,
+                        DimensionKey::Vertical => offset,
                     },
                     match dimension {
-                        Dimension::Horizontal => size,
-                        Dimension::Vertical => ctx.area.w,
+                        DimensionKey::Horizontal => size,
+                        DimensionKey::Vertical => ctx.area.w,
                     },
                     match dimension {
-                        Dimension::Horizontal => ctx.area.h,
-                        Dimension::Vertical => size,
+                        DimensionKey::Horizontal => ctx.area.h,
+                        DimensionKey::Vertical => size,
                     },
                 )));
             offset += size;
@@ -123,29 +117,35 @@ impl<Event: Clone + Debug + 'static> Group<Event> {
 }
 
 #[derive(Copy, Clone, Debug)]
-enum Dimension {
+enum DimensionKey {
     Horizontal,
     Vertical,
 }
 
+#[derive(Debug, Copy, Clone)]
+enum CalculatedSize {
+    Fixed(f32),
+    Stretch { fixed_part: f32 },
+}
+
 fn calc_size_dimension<Event>(
     node: &Node<Event>,
-    dimension: Dimension,
+    dimension: DimensionKey,
     ctx: &Ctx<Event>,
-) -> FinalSize
+) -> CalculatedSize
     where Event: Clone + Debug + 'static
 {
     let ctx = ctx.step_down(UiPathStep::Name(node.name.unwrap_or("<node>")));
     let dimension_value = match dimension {
-        Dimension::Horizontal => node.components.get::<Width>().map(|it| it.0),
-        Dimension::Vertical => node.components.get::<Height>().map(|it| it.0),
+        DimensionKey::Horizontal => node.components.get::<Width>().map(|it| it.0),
+        DimensionKey::Vertical => node.components.get::<Height>().map(|it| it.0),
     };
     let flow = match dimension_value {
         None => Flow::Calculate(CalculateFlow::AsIs),
         Some(size) => match size {
-            Size::Fixed(size) => Flow::Propagate(FinalSize::Fixed(size)),
-            Size::Stretch { fixed_part } => Flow::Propagate(FinalSize::Stretch { fixed_part}),
-            Size::RemoveStretch => Flow::Calculate(CalculateFlow::RemoveStretch),
+            Dimension::Fixed(size) => Flow::Propagate(CalculatedSize::Fixed(size)),
+            Dimension::Stretch { fixed_part } => Flow::Propagate(CalculatedSize::Stretch { fixed_part}),
+            Dimension::RemoveStretch => Flow::Calculate(CalculateFlow::RemoveStretch),
         },
     };
     enum CalculateFlow {
@@ -153,7 +153,7 @@ fn calc_size_dimension<Event>(
         RemoveStretch,
     }
     enum Flow {
-        Propagate(FinalSize),
+        Propagate(CalculatedSize),
         Calculate(CalculateFlow),
     }
     match flow {
@@ -168,15 +168,15 @@ fn calc_size_dimension<Event>(
                 ),
                 Some(group) => {
                     let merge_strategy = match dimension {
-                        Dimension::Horizontal => match group.layout {
-                            Layout::Layered => FinalSize::max,
-                            Layout::Vertical => FinalSize::max,
-                            Layout::Horizontal => FinalSize::sum,
+                        DimensionKey::Horizontal => match group.layout {
+                            Layout::Layered => CalculatedSize::max,
+                            Layout::Vertical => CalculatedSize::max,
+                            Layout::Horizontal => CalculatedSize::sum,
                         }
-                        Dimension::Vertical => match group.layout {
-                            Layout::Layered => FinalSize::max,
-                            Layout::Vertical => FinalSize::sum,
-                            Layout::Horizontal => FinalSize::max,
+                        DimensionKey::Vertical => match group.layout {
+                            Layout::Layered => CalculatedSize::max,
+                            Layout::Vertical => CalculatedSize::sum,
+                            Layout::Horizontal => CalculatedSize::max,
                         }
                     };
                     let final_size = group.children.iter().enumerate()
@@ -185,10 +185,10 @@ fn calc_size_dimension<Event>(
                             &ctx.step_down(UiPathStep::Index(i)),
                         ))
                         .reduce(merge_strategy)
-                        .unwrap_or(FinalSize::Stretch { fixed_part: 0.0 });
+                        .unwrap_or(CalculatedSize::Stretch { fixed_part: 0.0 });
                     match sub_flow {
                         CalculateFlow::AsIs => final_size,
-                        CalculateFlow::RemoveStretch => FinalSize::Fixed(final_size.get_fixed_part()),
+                        CalculateFlow::RemoveStretch => CalculatedSize::Fixed(final_size.get_fixed_part()),
                     }
                 }
             }
@@ -196,36 +196,36 @@ fn calc_size_dimension<Event>(
     }
 }
 
-impl FinalSize {
-    fn sum(a: FinalSize, b: FinalSize) -> FinalSize {
+impl CalculatedSize {
+    fn sum(a: CalculatedSize, b: CalculatedSize) -> CalculatedSize {
         let fixed_part = a.get_fixed_part() + b.get_fixed_part();
         if a.is_stretch() || b.is_stretch() {
-            FinalSize::Stretch { fixed_part }
+            CalculatedSize::Stretch { fixed_part }
         } else {
-            FinalSize::Fixed(fixed_part)
+            CalculatedSize::Fixed(fixed_part)
         }
     }
 
-    fn max(a: FinalSize, b: FinalSize) -> FinalSize {
+    fn max(a: CalculatedSize, b: CalculatedSize) -> CalculatedSize {
         let fixed_part = a.get_fixed_part().max(b.get_fixed_part());
         if a.is_stretch() || b.is_stretch() {
-            FinalSize::Stretch { fixed_part }
+            CalculatedSize::Stretch { fixed_part }
         } else {
-            FinalSize::Fixed(fixed_part)
+            CalculatedSize::Fixed(fixed_part)
         }
     }
 
     fn is_stretch(&self) -> bool {
         match self {
-            FinalSize::Fixed(_) => false,
-            FinalSize::Stretch { .. } => true,
+            CalculatedSize::Fixed(_) => false,
+            CalculatedSize::Stretch { .. } => true,
         }
     }
 
     fn get_fixed_part(&self) -> f32 {
         *match self {
-            FinalSize::Fixed(value) => value,
-            FinalSize::Stretch { fixed_part } => fixed_part
+            CalculatedSize::Fixed(value) => value,
+            CalculatedSize::Stretch { fixed_part } => fixed_part
         }
     }
 }
