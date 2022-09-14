@@ -3,7 +3,7 @@ use crate::fluent_primitives::FluentPrimitives;
 use crate::primitives::node::Node;
 
 pub trait FluentMargin<Event> {
-    fn margin<T: Into<MarginOffset>>(self, offset: T, target: Node<Event>) -> Self;
+    fn wrap_margin<T: Into<MarginOffset>>(self, offset: T) -> Self;
 }
 
 pub struct MarginOffset {
@@ -55,15 +55,15 @@ impl From<(f32, f32, f32, f32)> for MarginOffset {
 }
 
 impl<Event: Clone + Debug + 'static> FluentMargin<Event> for Node<Event> {
-    fn margin<T: Into<MarginOffset>>(self, offset: T, target: Node<Event>) -> Self {
+    fn wrap_margin<T: Into<MarginOffset>>(self, offset: T) -> Self {
         let offset = offset.into();
-        self.horizontal_group(vec![
+        Node::new("margin").horizontal_group(vec![
             Node::new("frame left").width(offset.left).height(0.0),
             Node::new("frame central column")
                 // .add_component(*target.components.get::<Width>().unwrap_or_else(|| panic!("Width required for margin target {}", target.name.unwrap_or("<node>"))))
                 .vertical_group(vec![
                     Node::new("frame top").height(offset.top).width(0.0),
-                    target,
+                    self,
                     Node::new("frame bottom").height(offset.bottom).width(0.0),
                 ]),
             Node::new("frame right").width(offset.right).height(0.0),
