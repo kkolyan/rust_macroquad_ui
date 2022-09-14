@@ -10,7 +10,6 @@ use crate::primitives::group::Width;
 use crate::primitives::node::Node;
 use crate::primitives::text::Text;
 use crate::primitives::text::TextStyle;
-use crate::primitives::text::ToText;
 
 pub trait FluentPrimitives<Event> {
     fn color_fill(self, color: Color) -> Self;
@@ -23,7 +22,7 @@ pub trait FluentPrimitives<Event> {
     fn layers(self, children: Vec<Node<Event>>) -> Self;
     fn horizontal_group(self, children: Vec<Node<Event>>) -> Self;
     fn vertical_group(self, children: Vec<Node<Event>>) -> Self;
-    fn text<S: ToText>(self, value: S, style: TextStyle) -> Self;
+    fn text<S: Into<String>>(self, value: S, style: TextStyle) -> Self;
 }
 
 impl<Event: Clone + Debug + 'static> FluentPrimitives<Event> for Node<Event> {
@@ -67,14 +66,10 @@ impl<Event: Clone + Debug + 'static> FluentPrimitives<Event> for Node<Event> {
         self.add_component(Group::new(Layout::Vertical, children))
     }
 
-    fn text<S: ToText>(self, value: S, style: TextStyle) -> Self {
-        let text = Text {
-            value: value.to_text(),
+    fn text<S: Into<String>>(self, value: S, style: TextStyle) -> Self {
+        self.add_component(Text {
+            value: value.into(),
             style,
-        };
-        let size = text.measure_self();
-        self.add_component(text)
-            .width(size.width)
-            .height(style.font_size)// because size.y varies depends on the presence of letters like "p"
+        })
     }
 }

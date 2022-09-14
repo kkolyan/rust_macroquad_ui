@@ -39,19 +39,3 @@ impl Text {
         measure_text(self.value.as_str(), None, self.style.font_size as u16, 1.0)
     }
 }
-
-pub trait ToText {
-    fn to_text(self) -> String;
-}
-
-impl ToText for String {
-    fn to_text(self) -> String {
-        self
-    }
-}
-
-impl ToText for &str {
-    fn to_text(self) -> String {
-        self.to_owned()
-    }
-}

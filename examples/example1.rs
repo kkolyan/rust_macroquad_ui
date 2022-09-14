@@ -7,7 +7,9 @@ use macroquad::input::is_key_pressed;
 use macroquad::input::KeyCode::Escape;
 use macroquad::window::clear_background;
 use macroquad::window::next_frame;
+use rust_macroquad_ui::basic_composites::align::{AlignX, AlignY};
 use rust_macroquad_ui::basic_composites::backgroud::FluentBackground;
+use rust_macroquad_ui::basic_composites::label::FluentLabel;
 use rust_macroquad_ui::basic_composites::margin::FluentMargin;
 
 use rust_macroquad_ui::fluent_primitives::FluentPrimitives;
@@ -73,16 +75,7 @@ fn left_panel(text_1: TextStyle) -> Node<Event> {
             node("minimap frame")
                 .vertical_group(vec![
                     node("title line")
-                        .horizontal_group(vec![
-                            node("left stretch")
-                                .height(0.0)
-                                .width_stretch(),
-                            node("map title")
-                                .text("The map", text_1),
-                            node("left stretch")
-                                .height(0.0)
-                                .width_stretch(),
-                        ]),
+                        .label("The map", (text_1, AlignX::Center, AlignY::Center)),
                     node("minimap")
                         .width(150.0)
                         .height(150.0)
@@ -97,7 +90,7 @@ fn left_panel(text_1: TextStyle) -> Node<Event> {
                     node("items list")
                         .vertical_group((0..5)
                             .map(|i| node("Item")
-                                .text(format!("Item {}", i), text_1)
+                                .label(format!("Item {}", i), text_1)
                             )
                             .collect())
                         .wrap_background(RED),
