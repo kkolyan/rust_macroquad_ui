@@ -3,7 +3,7 @@ use macroquad::math::Rect;
 use crate::core::Element;
 use crate::core::Ctx;
 use crate::core::UiPathStep;
-use crate::primitives::node::Node;
+use crate::primitives::node2::{Node, NodeChain, NodeComponent};
 
 #[derive(Debug, Copy, Clone)]
 pub enum Layout {
@@ -18,8 +18,8 @@ pub struct Width(pub Dimension);
 #[derive(Debug, Copy, Clone)]
 pub struct Height(pub Dimension);
 
-impl<Event> Element<Event> for Width {}
-impl<Event> Element<Event> for Height {}
+impl<Event> NodeComponent<Event> for Width {}
+impl<Event> NodeComponent<Event> for Height {}
 
 #[derive(Debug, Copy, Clone)]
 pub enum Dimension {
@@ -40,8 +40,8 @@ impl<Event> Group<Event> {
     }
 }
 
-impl<Event: Clone + Debug + 'static> Element<Event> for Group<Event> {
-    fn do_phase(&self, ctx: Ctx<Event>) {
+impl<Event: Clone + Debug + 'static> NodeComponent<Event> for Group<Event> {
+    fn do_phase_(&self, ctx: Ctx<Event>, next: NodeChain<Event>) {
         match self.layout {
             Layout::Layered => {
                 for child in &self.children {
@@ -51,6 +51,7 @@ impl<Event: Clone + Debug + 'static> Element<Event> for Group<Event> {
             Layout::Vertical => self.do_layout(&ctx, DimensionKey::Vertical),
             Layout::Horizontal => self.do_layout(&ctx, DimensionKey::Horizontal),
         }
+        next.do_phase(ctx)
     }
 }
 

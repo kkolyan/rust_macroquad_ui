@@ -1,5 +1,6 @@
 use std::fmt::Debug;
 use crate::core::{ComponentSet, Ctx, Element};
+use crate::primitives::node2::{NodeChain, NodeComponent};
 
 #[derive(Debug, Clone)]
 pub struct Node<Event> {
@@ -27,10 +28,11 @@ impl<Event: Clone> Node<Event> {
     }
 }
 
-impl<Event: Clone> Element<Event> for Node<Event> {
-    fn do_phase(&self, ctx: Ctx<Event>) {
+impl<Event: Clone> NodeComponent<Event> for Node<Event> {
+    fn do_phase_(&self, ctx: Ctx<Event>, next: NodeChain<Event>) {
         for feature in self.components.iter() {
             feature.do_phase(ctx.clone());
         }
+        next.do_phase(ctx)
     }
 }

@@ -1,6 +1,7 @@
 use std::fmt::Debug;
+use crate::core::Ctx;
 use crate::fluent_primitives::FluentPrimitives;
-use crate::primitives::node::Node;
+use crate::primitives::node2::{Node, NodeChain, NodeComponent};
 
 pub trait FluentMargin<Event> {
     fn margin<T: Into<MarginOffset>>(self, offset: T, target: Node<Event>) -> Self;
@@ -51,6 +52,16 @@ impl From<(f32, f32, f32, f32)> for MarginOffset {
             top,
             private: (),
         }
+    }
+}
+
+struct Margin {
+    offset: MarginOffset,
+}
+
+impl <Event> NodeComponent<Event> for Margin {
+    fn do_phase_(&self, ctx: Ctx<Event>, next: NodeChain<Event>) {
+        next.do_phase(ctx.clone_with(|it| it.area))
     }
 }
 

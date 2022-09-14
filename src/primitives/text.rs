@@ -7,6 +7,7 @@ use macroquad::text::measure_text;
 use crate::core::Ctx;
 use crate::core::Element;
 use crate::core::Phase;
+use crate::primitives::node2::{NodeChain, NodeComponent};
 
 #[derive(Debug, Clone)]
 pub struct Text {
@@ -20,8 +21,8 @@ pub struct TextStyle {
     pub color: Color,
 }
 
-impl<Event> Element<Event> for Text {
-    fn do_phase(&self, ctx: Ctx<Event>) {
+impl<Event> NodeComponent<Event> for Text {
+    fn do_phase_(&self, ctx: Ctx<Event>, next: NodeChain<Event>) {
         match ctx.phase {
             Phase::Draw => {
                 let text = self.value.as_str();
@@ -31,6 +32,7 @@ impl<Event> Element<Event> for Text {
             }
             Phase::CollectEvents { .. } => {}
         }
+        next.do_phase(ctx)
     }
 }
 

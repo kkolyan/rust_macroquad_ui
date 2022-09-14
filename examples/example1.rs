@@ -10,7 +10,7 @@ use macroquad::window::next_frame;
 use rust_macroquad_ui::basic_composites::margin::FluentMargin;
 
 use rust_macroquad_ui::fluent_primitives::FluentPrimitives;
-use rust_macroquad_ui::primitives::node::Node;
+use rust_macroquad_ui::primitives::node2::Node;
 use rust_macroquad_ui::primitives::text::TextStyle;
 
 #[derive(Clone, Debug)]

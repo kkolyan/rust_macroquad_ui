@@ -39,6 +39,14 @@
                 self.ptr_indices.insert(std::any::TypeId::of::<T>(), self.ptrs.len() - 1);
             }
 
+            pub fn indices<'a>(&'a self) -> std::iter::Map<std::iter::Enumerate<std::slice::Iter<*const dyn $bound$(<$bound_param>)?>>, fn((usize, &*const dyn $bound$(<$bound_param>)?)) -> usize> {
+                self.ptrs.iter().enumerate().map(|(i, _)| i)
+            }
+
+            pub fn get_i(&self, index: usize) -> Option<&dyn $bound$(<$bound_param>)?> {
+                self.ptrs.get(index).map(|value| unsafe { value.as_ref().unwrap() })
+            }
+
             pub fn iter<'a>(&'a self) -> std::iter::Map<
                 std::slice::Iter<
                     'a,

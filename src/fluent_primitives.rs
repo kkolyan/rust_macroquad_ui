@@ -7,7 +7,7 @@ use crate::primitives::group::Layout;
 use crate::primitives::group::Height;
 use crate::primitives::group::Group;
 use crate::primitives::group::Width;
-use crate::primitives::node::Node;
+use crate::primitives::node2::Node;
 use crate::primitives::text::Text;
 use crate::primitives::text::TextStyle;
 use crate::primitives::text::ToText;
