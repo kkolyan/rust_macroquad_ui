@@ -11,7 +11,7 @@ use rust_macroquad_ui::basic_composites::backgroud::FluentBackground;
 use rust_macroquad_ui::basic_composites::margin::FluentMargin;
 
 use rust_macroquad_ui::fluent_primitives::FluentPrimitives;
-use rust_macroquad_ui::primitives::node::Node;
+use rust_macroquad_ui::primitives::node::{Node, node};
 use rust_macroquad_ui::primitives::text::TextStyle;
 
 #[derive(Clone, Debug)]
@@ -37,25 +37,25 @@ fn root() -> Node<Event> {
         color: WHITE,
     };
 
-    Node::<Event>::new("root")
+    node("root")
         .horizontal_group(vec![
             left_panel(text_1),
-            Node::new("stretch")
+            node("stretch")
                 .height(0.0)
                 .width_stretch(),
-            Node::new("Right block")
+            node("Right block")
                 .vertical_group(vec![
-                    Node::new("stretch").height_stretch().width(0.0),
+                    node("stretch").height_stretch().width(0.0),
                     right_bottom_panel(),
                 ]),
         ])
 }
 
 fn right_bottom_panel() -> Node<Event> {
-    Node::new("margin")
+    node("margin")
         .horizontal_group(
             [RED, ORANGE, YELLOW, GREEN, BLUE, DARKBLUE, PURPLE].iter()
-                .map(|color| Node::new("color icon")
+                .map(|color| node("color icon")
                     .width(32.0)
                     .height(32.0)
                     .wrap_background(*color)
@@ -67,36 +67,36 @@ fn right_bottom_panel() -> Node<Event> {
 }
 
 fn left_panel(text_1: TextStyle) -> Node<Event> {
-    Node::new("Left panel")
+    node("Left panel")
         .width_no_stretch()
         .vertical_group(vec![
-            Node::new("minimap frame")
+            node("minimap frame")
                 .vertical_group(vec![
-                    Node::new("title line")
+                    node("title line")
                         .horizontal_group(vec![
-                            Node::new("left stretch")
+                            node("left stretch")
                                 .height(0.0)
                                 .width_stretch(),
-                            Node::new("map title")
+                            node("map title")
                                 .text("The map", text_1),
-                            Node::new("left stretch")
+                            node("left stretch")
                                 .height(0.0)
                                 .width_stretch(),
                         ]),
-                    Node::new("minimap")
+                    node("minimap")
                         .width(150.0)
                         .height(150.0)
                         .wrap_background(BLUE),
                 ])
                 .wrap_margin(16.0),
-            Node::new("stretch")
+            node("stretch")
                 .width(0.0)
                 .height_stretch(),
-            Node::new("item box")
+            node("item box")
                 .horizontal_group(vec![
-                    Node::new("items list")
+                    node("items list")
                         .vertical_group((0..5)
-                            .map(|i| Node::new("Item")
+                            .map(|i| node("Item")
                                 .text(format!("Item {}", i), text_1)
                             )
                             .collect())

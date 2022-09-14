@@ -7,16 +7,17 @@ pub struct Node<Event> {
     pub components: ComponentSet<Event>,
 }
 
+pub fn node<Event>(name: &'static str) -> Node<Event> {
+    Node {
+        name: Some(name),
+        components: ComponentSet::new(),
+    }
+}
+
 impl<Event: Clone> Node<Event> {
     pub fn anon() -> Self {
         Node {
             name: None,
-            components: ComponentSet::new(),
-        }
-    }
-    pub fn new(name: &'static str) -> Self {
-        Node {
-            name: Some(name),
             components: ComponentSet::new(),
         }
     }
