@@ -1,10 +1,11 @@
 use std::marker::PhantomData;
 use crate::core::{Ctx, Element, Flag};
 
+#[derive(Debug, Clone)]
 pub struct Conditional<Event, Target: Element<Event>> {
-    pd: PhantomData<Event>,
-    default: Option<Target>,
-    named: Vec<(Flag, Option<Target>)>,
+    pub pd: PhantomData<Event>,
+    pub default: Option<Target>,
+    pub named: Vec<(Flag, Option<Target>)>,
 }
 
 impl<Event, Target: Element<Event>> Element<Event> for Conditional<Event, Target> {

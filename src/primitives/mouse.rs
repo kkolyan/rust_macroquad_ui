@@ -40,9 +40,10 @@ impl<Event: Debug + Clone> Element<Event> for MouseHandler<Event> {
     }
 }
 
+#[derive(Clone, Debug)]
 pub struct FlagOnHover<Event> {
-    target: Node<Event>,
-    flag: Flag,
+    pub target: Node<Event>,
+    pub flag: Flag,
 }
 
 impl<Event: Clone> Element<Event> for FlagOnHover<Event> {

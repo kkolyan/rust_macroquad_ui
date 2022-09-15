@@ -4,7 +4,7 @@ use crate::fluent_primitives::FluentPrimitives;
 use crate::primitives::node::{Node, node};
 
 pub struct Background {
-    color_fill: Color,
+    pub color_fill: Color,
 }
 
 impl From<Color> for Background {

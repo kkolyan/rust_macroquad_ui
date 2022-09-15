@@ -9,10 +9,12 @@ use macroquad::window::clear_background;
 use macroquad::window::next_frame;
 use rust_macroquad_ui::basic_composites::align::{AlignX, AlignY};
 use rust_macroquad_ui::basic_composites::backgroud::FluentBackground;
+use rust_macroquad_ui::basic_composites::button::{Button, FluentButton};
 use rust_macroquad_ui::basic_composites::label::FluentLabel;
 use rust_macroquad_ui::basic_composites::margin::FluentMargin;
 
 use rust_macroquad_ui::fluent_primitives::FluentPrimitives;
+use rust_macroquad_ui::primitives::mouse::FlagOnHover;
 use rust_macroquad_ui::primitives::node::{Node, node};
 use rust_macroquad_ui::primitives::text::TextStyle;
 
@@ -75,7 +77,8 @@ fn left_panel(text_1: TextStyle) -> Node<Event> {
             node("minimap frame")
                 .vertical_group(vec![
                     node("title line")
-                        .label("The map", (text_1, AlignX::Center, AlignY::Center)),
+                        .label("The map", (text_1, AlignX::Center, AlignY::Center))
+                        .color_border(BLACK, 6.0),
                     node("minimap")
                         .width(150.0)
                         .height(150.0)
@@ -91,6 +94,11 @@ fn left_panel(text_1: TextStyle) -> Node<Event> {
                         .vertical_group((0..5)
                             .map(|i| node("Item")
                                 .label(format!("Item {}", i), text_1)
+                                .wrap_button(Button {
+                                    event: None,
+                                    background: Some(BLACK),
+                                    background_hover: Some(WHITE)
+                                })
                             )
                             .collect())
                         .wrap_background(RED),

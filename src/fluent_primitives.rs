@@ -1,5 +1,6 @@
 use macroquad::color::Color;
 use std::fmt::Debug;
+use crate::primitives::border::Border;
 use crate::primitives::color_fill::ColorFill;
 
 use crate::primitives::group::Dimension;
@@ -13,6 +14,7 @@ use crate::primitives::text::TextStyle;
 
 pub trait FluentPrimitives<Event> {
     fn color_fill(self, color: Color) -> Self;
+    fn color_border(self, color: Color, thickness: f32) -> Self;
     fn width(self, value: f32) -> Self;
     fn width_stretch(self) -> Self;
     fn width_no_stretch(self) -> Self;
@@ -28,6 +30,10 @@ pub trait FluentPrimitives<Event> {
 impl<Event: Clone + Debug + 'static> FluentPrimitives<Event> for Node<Event> {
     fn color_fill(self, color: Color) -> Self {
         self.add_component(ColorFill::from(color))
+    }
+
+    fn color_border(self, color: Color, thickness: f32) -> Self {
+        self.add_component(Border {color, thickness})
     }
 
     fn width(self, value: f32) -> Self {

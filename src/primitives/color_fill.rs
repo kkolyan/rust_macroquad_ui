@@ -4,7 +4,7 @@ use crate::core::{Ctx, Element, Phase};
 
 #[derive(Debug, Copy, Clone)]
 pub struct ColorFill {
-    color: Color,
+    pub color: Color,
 }
 
 impl From<Color> for ColorFill {
