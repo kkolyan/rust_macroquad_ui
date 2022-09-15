@@ -1,10 +1,7 @@
 use std::fmt::Debug;
-use crate::fluent_primitives::FluentPrimitives;
+use crate::primitives::group::Group;
+use crate::primitives::{height, height_stretch, horizontal_group, vertical_group, width, width_stretch};
 use crate::primitives::node::{Node, node};
-
-pub trait FluentAlign<Event> {
-    fn wrap_align(self, x: AlignX, y: AlignY) -> Self;
-}
 
 #[derive(Debug, Copy, Clone)]
 pub enum AlignX {
@@ -20,21 +17,23 @@ pub enum AlignY {
     Bottom,
 }
 
-impl<Event: Clone + Debug + 'static> FluentAlign<Event> for Node<Event> {
-    fn wrap_align(self, x: AlignX, y: AlignY) -> Self {
-        let row = {
-            let stretch_x = node("stretch x").width_stretch().height(0.0);
-            match x {
-                AlignX::Left => node("align left").horizontal_group(vec![self, stretch_x]),
-                AlignX::Center => node("align center (x)").horizontal_group(vec![stretch_x.clone(), self, stretch_x]),
-                AlignX::Right => node("align right").horizontal_group(vec![stretch_x, self]),
-            }
-        };
-        let stretch_y = node("stretch y").height_stretch().width(0.0);
-        match y {
-            AlignY::Top => node("align top").vertical_group(vec![row, stretch_y]),
-            AlignY::Center => node("align center (y)").vertical_group(vec![stretch_y.clone(), row, stretch_y]),
-            AlignY::Bottom => node("align bottom").vertical_group(vec![stretch_y, row]),
+pub fn align<Event: 'static + Clone + Debug>(x: AlignX, y: AlignY, target: Node<Event>) -> Group<Event> {
+    let row = {
+        let stretch_x = node("stretch x")
+            .set(width_stretch())
+            .set(height(0.0));
+        match x {
+            AlignX::Left => node("align left").set(horizontal_group(vec![target, stretch_x])),
+            AlignX::Center => node("align center (x)").set(horizontal_group(vec![stretch_x.clone(), target, stretch_x])),
+            AlignX::Right => node("align right").set(horizontal_group(vec![stretch_x, target])),
         }
-    }
+    };
+    let stretch_y = node("stretch y").set(height_stretch()).set(width(0.0));
+    horizontal_group(vec![
+        match y {
+            AlignY::Top => node("align top").set(vertical_group(vec![row, stretch_y])),
+            AlignY::Center => node("align center (y)").set(vertical_group(vec![stretch_y.clone(), row, stretch_y])),
+            AlignY::Bottom => node("align bottom").set(vertical_group(vec![stretch_y, row])),
+        }
+    ])
 }

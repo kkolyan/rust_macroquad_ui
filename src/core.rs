@@ -9,6 +9,7 @@ use macroquad::window::screen_height;
 use macroquad::window::screen_width;
 
 use crate::make_bounded_composite;
+use crate::primitives::node::Node;
 
 make_bounded_composite! {pub, ComponentSet<Event>, Element<Event>}
 
@@ -41,7 +42,7 @@ pub trait Element<Event> {
     fn do_phase(&self, _ctx: Ctx<Event>) {}
 }
 
-pub fn collect_layer_events<Event: 'static + Clone, Root: Element<Event>>(layer_root: &Root) -> Vec<Event> {
+pub fn collect_layer_events<Event: 'static + Clone>(layer_root: &Node<Event>) -> Vec<Event> {
     let events = Rc::new(RefCell::from(vec![]));
     let events2 = events.clone();
     layer_root.do_phase(Ctx::new(
@@ -54,7 +55,7 @@ pub fn collect_layer_events<Event: 'static + Clone, Root: Element<Event>>(layer_
     events.take()
 }
 
-pub fn draw_layer<Event: Clone, Root: Element<Event>>(layer_root: &Root) {
+pub fn draw_layer<Event: Clone>(layer_root: &Node<Event>) {
     layer_root.do_phase(Ctx::new(Rect::new(0.0, 0.0, screen_width(), screen_height()), 1.0, Phase::Draw));
 }
 

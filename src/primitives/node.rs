@@ -4,7 +4,13 @@ use crate::core::{ComponentSet, Ctx, Element};
 #[derive(Debug, Clone)]
 pub struct Node<Event> {
     pub name: Option<&'static str>,
-    pub components: ComponentSet<Event>,
+    components: ComponentSet<Event>,
+}
+
+impl<Event> Node<Event> {
+    pub(crate) fn get<T: 'static + Element<Event>>(&self) -> Option<&T> {
+        self.components.get()
+    }
 }
 
 pub fn node<Event>(name: &'static str) -> Node<Event> {
@@ -22,14 +28,14 @@ impl<Event: Clone> Node<Event> {
         }
     }
 
-    pub fn add_component<T: Element<Event> + Clone + Debug + 'static>(mut self, feature: T) -> Self {
-        self.components.put(feature);
+    pub fn set<T: Element<Event> + Clone + Debug + 'static>(mut self, c: T) -> Self {
+        self.components.put(c);
         self
     }
 }
 
-impl<Event: Clone> Element<Event> for Node<Event> {
-    fn do_phase(&self, ctx: Ctx<Event>) {
+impl<Event: Clone> Node<Event> {
+    pub(crate) fn do_phase(&self, ctx: Ctx<Event>) {
         for feature in self.components.iter() {
             feature.do_phase(ctx.clone());
         }

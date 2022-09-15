@@ -1,10 +1,7 @@
 use std::fmt::Debug;
-use crate::fluent_primitives::FluentPrimitives;
+use crate::primitives::group::Group;
+use crate::primitives::{height, horizontal_group, vertical_group, width};
 use crate::primitives::node::{Node, node};
-
-pub trait FluentMargin<Event> {
-    fn wrap_margin<T: Into<MarginOffset>>(self, offset: T) -> Self;
-}
 
 pub struct MarginOffset {
     pub left: f32,
@@ -54,19 +51,25 @@ impl From<(f32, f32, f32, f32)> for MarginOffset {
     }
 }
 
-impl<Event: Clone + Debug + 'static> FluentMargin<Event> for Node<Event> {
-    fn wrap_margin<T: Into<MarginOffset>>(self, offset: T) -> Self {
-        let offset = offset.into();
-        node("margin").horizontal_group(vec![
-            node("frame left").width(offset.left).height(0.0),
+pub fn margin<Event: 'static + Clone + Debug, T: Into<MarginOffset>>(t: T, target: Node<Event>) -> Group<Event> {
+    let offset = t.into();
+    horizontal_group(vec![
+            node("frame left")
+                .set(width(offset.left))
+                .set(height(0.0)),
             node("frame central column")
                 // .add_component(*target.components.get::<Width>().unwrap_or_else(|| panic!("Width required for margin target {}", target.name.unwrap_or("<node>"))))
-                .vertical_group(vec![
-                    node("frame top").height(offset.top).width(0.0),
-                    self,
-                    node("frame bottom").height(offset.bottom).width(0.0),
-                ]),
-            node("frame right").width(offset.right).height(0.0),
+                .set(vertical_group(vec![
+                    node("frame top")
+                        .set(height(offset.top))
+                        .set(width(0.0)),
+                    target,
+                    node("frame bottom")
+                        .set(height(offset.bottom))
+                        .set(width(0.0)),
+                ])),
+            node("frame right")
+                .set(width(offset.right))
+                .set(height(0.0)),
         ])
-    }
 }
