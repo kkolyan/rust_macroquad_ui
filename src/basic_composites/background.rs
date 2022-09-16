@@ -8,7 +8,7 @@ pub struct Background {
     pub color: Color,
 }
 
-impl <Event: Clone + Debug + 'static> NodePadding<Event> for Background {
+impl<Event: Clone + Debug + 'static> NodePadding<Event> for Background {
     fn expand_padding(&self, content: Node<Event>) -> Node<Event> {
         node()
             .name("background")
@@ -17,6 +17,18 @@ impl <Event: Clone + Debug + 'static> NodePadding<Event> for Background {
     }
 }
 
-pub fn background(color: Color) -> Background {
-    Background { color }
+impl From<Color> for Background {
+    fn from(color: Color) -> Self {
+        Background { color }
+    }
+}
+
+impl From<&Color> for Background {
+    fn from(color: &Color) -> Self {
+        Background { color: *color }
+    }
+}
+
+pub fn background<T: Into<Background>>(v: T) -> Background {
+    v.into()
 }

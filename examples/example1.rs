@@ -62,7 +62,7 @@ fn right_bottom_panel() -> Node<Event> {
             [RED, ORANGE, YELLOW, GREEN, BLUE, DARKBLUE, PURPLE].iter()
                 .map(|color| node().name("icon")
                     .pad(margin((8.0, 0.0)))
-                    .pad(background(*color))
+                    .pad(background(color))
                     .set(width(32.0))
                     .set(height(32.0))
                 ).collect(),
