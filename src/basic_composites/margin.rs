@@ -55,21 +55,21 @@ pub fn margin<Event: 'static + Clone + Debug, T: Into<MarginOffset>>(t: T, targe
     let offset = t.into();
     horizontal_group(vec![
             node("frame left")
-                .set(width(offset.left))
-                .set(height(0.0)),
+                .tag(width(offset.left))
+                .tag(height(0.0)),
             node("frame central column")
                 // .add_component(*target.components.get::<Width>().unwrap_or_else(|| panic!("Width required for margin target {}", target.name.unwrap_or("<node>"))))
                 .set(vertical_group(vec![
                     node("frame top")
-                        .set(height(offset.top))
-                        .set(width(0.0)),
+                        .tag(height(offset.top))
+                        .tag(width(0.0)),
                     target,
                     node("frame bottom")
-                        .set(height(offset.bottom))
-                        .set(width(0.0)),
+                        .tag(height(offset.bottom))
+                        .tag(width(0.0)),
                 ])),
             node("frame right")
-                .set(width(offset.right))
-                .set(height(0.0)),
+                .tag(width(offset.right))
+                .tag(height(0.0)),
         ])
 }

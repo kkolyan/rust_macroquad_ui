@@ -39,7 +39,7 @@ pub enum UiPathStep {
 }
 
 pub trait Element<Event> {
-    fn do_phase(&self, _ctx: Ctx<Event>) {}
+    fn do_phase(&self, _ctx: Ctx<Event>);
 }
 
 pub fn collect_layer_events<Event: 'static + Clone>(layer_root: &Node<Event>) -> Vec<Event> {

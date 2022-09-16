@@ -3,7 +3,7 @@ use macroquad::math::Rect;
 use crate::core::Element;
 use crate::core::Ctx;
 use crate::core::UiPathStep;
-use crate::primitives::node::Node;
+use crate::primitives::node::{Node, TagMarker};
 
 #[derive(Debug, Copy, Clone)]
 pub enum Layout {
@@ -18,8 +18,8 @@ pub struct Width(pub Dimension);
 #[derive(Debug, Copy, Clone)]
 pub struct Height(pub Dimension);
 
-impl<Event> Element<Event> for Width {}
-impl<Event> Element<Event> for Height {}
+impl TagMarker for Width {}
+impl TagMarker for Height {}
 
 #[derive(Debug, Copy, Clone)]
 pub enum Dimension {
@@ -137,8 +137,8 @@ fn calc_size_dimension<Event>(
 {
     let ctx = ctx.step_down(UiPathStep::Name(node.name.unwrap_or("<node>")));
     let dimension_value = match dimension {
-        DimensionKey::Horizontal => node.get::<Width>().map(|it| it.0),
-        DimensionKey::Vertical => node.get::<Height>().map(|it| it.0),
+        DimensionKey::Horizontal => node.get_tag::<Width>().map(|it| it.0),
+        DimensionKey::Vertical => node.get_tag::<Height>().map(|it| it.0),
     };
     let flow = match dimension_value {
         None => Flow::Calculate(CalculateFlow::AsIs),
@@ -159,7 +159,7 @@ fn calc_size_dimension<Event>(
     match flow {
         Flow::Propagate(size) => size,
         Flow::Calculate(sub_flow) => {
-            match node.get::<Group<Event>>() {
+            match node.get_comp::<Group<Event>>() {
                 None => panic!(
                     "failed to resolve {:?} size of '{}' ({})",
                     dimension,

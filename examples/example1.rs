@@ -42,11 +42,11 @@ fn root() -> Node<Event> {
         .set(horizontal_group(vec![
             left_panel(text_1),
             node("stretch")
-                .set(height(0.0))
-                .set(width_stretch()),
+                .tag(height(0.0))
+                .tag(width_stretch()),
             node("Right block")
                 .set(vertical_group(vec![
-                    node("stretch").set(height_stretch()).set(width(0.0)),
+                    node("stretch").tag(height_stretch()).tag(width(0.0)),
                     right_bottom_panel(),
                 ])),
         ]))
@@ -61,15 +61,15 @@ fn right_bottom_panel() -> Node<Event> {
                     .map(|color| node("icon")
                         .set(margin((8.0, 0.0), node("color icon")
                             .set(color_fill(*color))
-                            .set(width(32.0))
-                            .set(height(32.0))))
+                            .tag(width(32.0))
+                            .tag(height(32.0))))
                     ).collect(),
             ))))
 }
 
 fn left_panel(text_1: TextStyle) -> Node<Event> {
     node("Left panel")
-        .set(width_no_stretch())
+        .tag(width_no_stretch())
         .set(color_fill(GREEN))
         .set(vertical_group(vec![
             node("minimap frame")
@@ -78,12 +78,12 @@ fn left_panel(text_1: TextStyle) -> Node<Event> {
                         label("The map", (text_1, AlignX::Center, AlignY::Center)),
                         node("minimap")
                             .set(color_fill(BLUE))
-                            .set(width(150.0))
-                            .set(height(150.0)),
+                            .tag(width(150.0))
+                            .tag(height(150.0)),
                     ])))),
             node("stretch")
-                .set(width(0.0))
-                .set(height_stretch()),
+                .tag(width(0.0))
+                .tag(height_stretch()),
             node("item box")
                 .set(margin(8.0, node("item box")
                     .set(horizontal_group(vec![

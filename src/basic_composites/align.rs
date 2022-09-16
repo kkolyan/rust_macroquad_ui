@@ -20,15 +20,17 @@ pub enum AlignY {
 pub fn align<Event: 'static + Clone + Debug>(x: AlignX, y: AlignY, target: Node<Event>) -> Group<Event> {
     let row = {
         let stretch_x = node("stretch x")
-            .set(width_stretch())
-            .set(height(0.0));
+            .tag(width_stretch())
+            .tag(height(0.0));
         match x {
             AlignX::Left => node("align left").set(horizontal_group(vec![target, stretch_x])),
             AlignX::Center => node("align center (x)").set(horizontal_group(vec![stretch_x.clone(), target, stretch_x])),
             AlignX::Right => node("align right").set(horizontal_group(vec![stretch_x, target])),
         }
     };
-    let stretch_y = node("stretch y").set(height_stretch()).set(width(0.0));
+    let stretch_y = node("stretch y")
+        .tag(height_stretch())
+        .tag(width(0.0));
     horizontal_group(vec![
         match y {
             AlignY::Top => node("align top").set(vertical_group(vec![row, stretch_y])),
