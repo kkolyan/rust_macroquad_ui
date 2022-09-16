@@ -54,21 +54,21 @@ impl From<(f32, f32, f32, f32)> for MarginOffset {
 pub fn margin<Event: 'static + Clone + Debug, T: Into<MarginOffset>>(t: T, target: Node<Event>) -> Group<Event> {
     let offset = t.into();
     horizontal_group(vec![
-            node("frame left")
+            node().name("frame left")
                 .set(width(offset.left))
                 .set(height(0.0)),
-            node("frame central column")
+            node().name("frame central column")
                 // .add_component(*target.components.get::<Width>().unwrap_or_else(|| panic!("Width required for margin target {}", target.name.unwrap_or("<node>"))))
                 .set(vertical_group(vec![
-                    node("frame top")
+                    node().name("frame top")
                         .set(height(offset.top))
                         .set(width(0.0)),
                     target,
-                    node("frame bottom")
+                    node().name("frame bottom")
                         .set(height(offset.bottom))
                         .set(width(0.0)),
                 ])),
-            node("frame right")
+            node().name("frame right")
                 .set(width(offset.right))
                 .set(height(0.0)),
         ])

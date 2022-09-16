@@ -19,6 +19,7 @@ pub struct Width(pub Dimension);
 pub struct Height(pub Dimension);
 
 impl<Event> Element<Event> for Width {}
+
 impl<Event> Element<Event> for Height {}
 
 #[derive(Debug, Copy, Clone)]
@@ -72,7 +73,7 @@ impl<Event: Clone + Debug + 'static> Group<Event> {
                     CalculatedSize::Stretch { fixed_part } => {
                         total_size += fixed_part;
                         stretch_count += 1;
-                    },
+                    }
                 }
             }
             let forward_area_size = match dimension {
@@ -88,11 +89,13 @@ impl<Event: Clone + Debug + 'static> Group<Event> {
         for (i, (child, size)) in sized_children.iter().copied().enumerate() {
             let size = match size {
                 CalculatedSize::Fixed(value) => value,
-                CalculatedSize::Stretch {fixed_part} => fixed_part + stretch_size,
+                CalculatedSize::Stretch { fixed_part } => fixed_part + stretch_size,
             };
+            let mut ctx = ctx.step_down(UiPathStep::Index(i));
+            if let Some(name) = child.get_name() {
+                ctx = ctx.step_down(UiPathStep::Name(name));
+            }
             child.do_phase(ctx
-                .step_down(UiPathStep::Index(i))
-                .step_down(UiPathStep::Name(child.name.unwrap_or("<node>")))
                 .clone_with(|ctx| ctx.area = Rect::new(
                     match dimension {
                         DimensionKey::Horizontal => offset,
@@ -135,7 +138,10 @@ fn calc_size_dimension<Event>(
 ) -> CalculatedSize
     where Event: Clone + Debug + 'static
 {
-    let ctx = ctx.step_down(UiPathStep::Name(node.name.unwrap_or("<node>")));
+    let mut ctx = ctx.clone();
+    if let Some(name) = node.get_name() {
+        ctx = ctx.step_down(UiPathStep::Name(name));
+    }
     let dimension_value = match dimension {
         DimensionKey::Horizontal => node.get::<Width>().map(|it| it.0),
         DimensionKey::Vertical => node.get::<Height>().map(|it| it.0),
@@ -144,7 +150,7 @@ fn calc_size_dimension<Event>(
         None => Flow::Calculate(CalculateFlow::AsIs),
         Some(size) => match size {
             Dimension::Fixed(size) => Flow::Propagate(CalculatedSize::Fixed(size)),
-            Dimension::Stretch { fixed_part } => Flow::Propagate(CalculatedSize::Stretch { fixed_part}),
+            Dimension::Stretch { fixed_part } => Flow::Propagate(CalculatedSize::Stretch { fixed_part }),
             Dimension::RemoveStretch => Flow::Calculate(CalculateFlow::RemoveStretch),
         },
     };
@@ -163,7 +169,7 @@ fn calc_size_dimension<Event>(
                 None => panic!(
                     "failed to resolve {:?} size of '{}' ({})",
                     dimension,
-                    node.name.unwrap_or("unknown"),
+                    node.get_name().unwrap_or("unknown"),
                     ctx.backtrace(),
                 ),
                 Some(group) => {

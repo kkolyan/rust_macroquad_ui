@@ -11,7 +11,8 @@ use macroquad::window::next_frame;
 use rust_macroquad_ui::basic_composites::align::{AlignX, AlignY};
 use rust_macroquad_ui::basic_composites::label::label;
 use rust_macroquad_ui::basic_composites::margin::margin;
-use rust_macroquad_ui::primitives::{color_fill, height, height_stretch, horizontal_group, vertical_group, width, width_no_stretch, width_stretch};
+use rust_macroquad_ui::basic_composites::stretch::{stretch_horizontal, stretch_vertical};
+use rust_macroquad_ui::primitives::{color_fill, height, horizontal_group, vertical_group, width, width_no_stretch};
 use rust_macroquad_ui::primitives::node::{Node, node};
 use rust_macroquad_ui::primitives::text::TextStyle;
 
@@ -38,28 +39,26 @@ fn root() -> Node<Event> {
         color: WHITE,
     };
 
-    node("root")
+    node().name("root")
         .set(horizontal_group(vec![
             left_panel(text_1),
-            node("stretch")
-                .set(height(0.0))
-                .set(width_stretch()),
-            node("Right block")
+            stretch_horizontal(),
+            node().name("Right block")
                 .set(vertical_group(vec![
-                    node("stretch").set(height_stretch()).set(width(0.0)),
+                    stretch_vertical(),
                     right_bottom_panel(),
                 ])),
         ]))
 }
 
 fn right_bottom_panel() -> Node<Event> {
-    node("margin")
+    node().name("right bottom panel")
         .set(color_fill(WHITE))
-        .set(margin(8.0, node("icons")
+        .set(margin(8.0, node()
             .set(horizontal_group(
                 [RED, ORANGE, YELLOW, GREEN, BLUE, DARKBLUE, PURPLE].iter()
-                    .map(|color| node("icon")
-                        .set(margin((8.0, 0.0), node("color icon")
+                    .map(|color| node().name("icon")
+                        .set(margin((8.0, 0.0), node()
                             .set(color_fill(*color))
                             .set(width(32.0))
                             .set(height(32.0))))
@@ -68,26 +67,23 @@ fn right_bottom_panel() -> Node<Event> {
 }
 
 fn left_panel(text_1: TextStyle) -> Node<Event> {
-    node("Left panel")
+    node().name("Left panel")
         .set(width_no_stretch())
         .set(color_fill(GREEN))
         .set(vertical_group(vec![
-            node("minimap frame")
-                .set(margin(16.0, node("minimap content")
-                    .set(vertical_group(vec![
-                        label("The map", (text_1, AlignX::Center, AlignY::Center)),
-                        node("minimap")
-                            .set(color_fill(BLUE))
-                            .set(width(150.0))
-                            .set(height(150.0)),
-                    ])))),
-            node("stretch")
-                .set(width(0.0))
-                .set(height_stretch()),
-            node("item box")
-                .set(margin(8.0, node("item box")
+            node().name("minimap frame").set(margin(16.0, node()
+                .set(vertical_group(vec![
+                    label("The map", (text_1, AlignX::Center, AlignY::Center)),
+                    node()
+                        .set(color_fill(BLUE))
+                        .set(width(150.0))
+                        .set(height(150.0)),
+                ])))),
+            stretch_vertical(),
+            node().name("item box")
+                .set(margin(8.0, node()
                     .set(horizontal_group(vec![
-                        node("items list")
+                        node()
                             .set(color_fill(RED))
                             .set(vertical_group((0..5)
                                 .map(|i| label(format!("Item {}", i), text_1)

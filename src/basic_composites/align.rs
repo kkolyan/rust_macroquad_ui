@@ -19,21 +19,21 @@ pub enum AlignY {
 
 pub fn align<Event: 'static + Clone + Debug>(x: AlignX, y: AlignY, target: Node<Event>) -> Group<Event> {
     let row = {
-        let stretch_x = node("stretch x")
+        let stretch_x = node().name("stretch x")
             .set(width_stretch())
             .set(height(0.0));
         match x {
-            AlignX::Left => node("align left").set(horizontal_group(vec![target, stretch_x])),
-            AlignX::Center => node("align center (x)").set(horizontal_group(vec![stretch_x.clone(), target, stretch_x])),
-            AlignX::Right => node("align right").set(horizontal_group(vec![stretch_x, target])),
+            AlignX::Left => node().name("align left").set(horizontal_group(vec![target, stretch_x])),
+            AlignX::Center => node().name("align center (x)").set(horizontal_group(vec![stretch_x.clone(), target, stretch_x])),
+            AlignX::Right => node().name("align right").set(horizontal_group(vec![stretch_x, target])),
         }
     };
-    let stretch_y = node("stretch y").set(height_stretch()).set(width(0.0));
+    let stretch_y = node().name("stretch y").set(height_stretch()).set(width(0.0));
     horizontal_group(vec![
         match y {
-            AlignY::Top => node("align top").set(vertical_group(vec![row, stretch_y])),
-            AlignY::Center => node("align center (y)").set(vertical_group(vec![stretch_y.clone(), row, stretch_y])),
-            AlignY::Bottom => node("align bottom").set(vertical_group(vec![stretch_y, row])),
+            AlignY::Top => node().name("align top").set(vertical_group(vec![row, stretch_y])),
+            AlignY::Center => node().name("align center (y)").set(vertical_group(vec![stretch_y.clone(), row, stretch_y])),
+            AlignY::Bottom => node().name("align bottom").set(vertical_group(vec![stretch_y, row])),
         }
     ])
 }

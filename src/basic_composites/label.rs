@@ -28,12 +28,12 @@ pub fn label<Event: Clone + Debug + 'static, T: Into<String>, S: Into<LabelStyle
     let t = t.into();
     let style = style.into();
     let size = measure_self(t.as_str(), style.text.font_size);
-    let label = node("label")
+    let label = node().name("label")
         .set(text(t, style.text))
         .set(width(size.width))
         .set(height(style.text.font_size));
-    node("label")
-        .set(align(style.align.0, style.align.1, node("label")
+    node().name("label")
+        .set(align(style.align.0, style.align.1, node().name("label")
             .set(horizontal_group(vec![
                 label
             ]))))
