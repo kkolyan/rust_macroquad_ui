@@ -15,7 +15,7 @@ use rust_macroquad_ui::basic_composites::margin::margin;
 use rust_macroquad_ui::basic_composites::no_stretch::no_stretch;
 use rust_macroquad_ui::basic_composites::no_stretch::NoStretchMode::Horizontal;
 use rust_macroquad_ui::basic_composites::stretch::{stretch_horizontal, stretch_vertical};
-use rust_macroquad_ui::primitives::{color_fill, height, horizontal_group, vertical_group, width, width_no_stretch};
+use rust_macroquad_ui::primitives::{height, horizontal_group, vertical_group, width};
 use rust_macroquad_ui::primitives::node::{Node, node};
 use rust_macroquad_ui::primitives::text::TextStyle;
 
