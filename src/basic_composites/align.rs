@@ -1,7 +1,6 @@
 use std::fmt::Debug;
-use crate::primitives::group::Group;
 use crate::primitives::{height, height_stretch, horizontal_group, vertical_group, width, width_stretch};
-use crate::primitives::node::{Node, node};
+use crate::primitives::node::{Node, node, NodePadding};
 
 #[derive(Debug, Copy, Clone)]
 pub enum AlignX {
@@ -17,23 +16,36 @@ pub enum AlignY {
     Bottom,
 }
 
-pub fn align<Event: 'static + Clone + Debug>(x: AlignX, y: AlignY, target: Node<Event>) -> Group<Event> {
-    let row = {
-        let stretch_x = node().name("stretch x")
-            .set(width_stretch())
-            .set(height(0.0));
-        match x {
-            AlignX::Left => node().name("align left").set(horizontal_group(vec![target, stretch_x])),
-            AlignX::Center => node().name("align center (x)").set(horizontal_group(vec![stretch_x.clone(), target, stretch_x])),
-            AlignX::Right => node().name("align right").set(horizontal_group(vec![stretch_x, target])),
-        }
-    };
-    let stretch_y = node().name("stretch y").set(height_stretch()).set(width(0.0));
-    horizontal_group(vec![
-        match y {
-            AlignY::Top => node().name("align top").set(vertical_group(vec![row, stretch_y])),
-            AlignY::Center => node().name("align center (y)").set(vertical_group(vec![stretch_y.clone(), row, stretch_y])),
-            AlignY::Bottom => node().name("align bottom").set(vertical_group(vec![stretch_y, row])),
-        }
-    ])
+#[derive(Debug, Copy, Clone)]
+pub struct Align {
+    x: AlignX,
+    y: AlignY,
+}
+
+impl<Event: Clone + Debug + 'static> NodePadding<Event> for Align {
+    fn expand_padding(&self, content: Node<Event>) -> Node<Event> {
+        let row = {
+            let stretch_x = node().name("stretch x")
+                .set(width_stretch())
+                .set(height(0.0));
+            match self.x {
+                AlignX::Left => node().name("align left").set(horizontal_group(vec![content, stretch_x])),
+                AlignX::Center => node().name("align center (x)").set(horizontal_group(vec![stretch_x.clone(), content, stretch_x])),
+                AlignX::Right => node().name("align right").set(horizontal_group(vec![stretch_x, content])),
+            }
+        };
+        let stretch_y = node().name("stretch y").set(height_stretch()).set(width(0.0));
+        node()
+            .set(horizontal_group(vec![
+                match self.y {
+                    AlignY::Top => node().name("align top").set(vertical_group(vec![row, stretch_y])),
+                    AlignY::Center => node().name("align center (y)").set(vertical_group(vec![stretch_y.clone(), row, stretch_y])),
+                    AlignY::Bottom => node().name("align bottom").set(vertical_group(vec![stretch_y, row])),
+                }
+            ]))
+    }
+}
+
+pub fn align(x: AlignX, y: AlignY) -> Align {
+    Align { x, y }
 }

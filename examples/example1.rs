@@ -9,8 +9,11 @@ use macroquad::window::clear_background;
 use macroquad::window::next_frame;
 
 use rust_macroquad_ui::basic_composites::align::{AlignX, AlignY};
+use rust_macroquad_ui::basic_composites::background::background;
 use rust_macroquad_ui::basic_composites::label::label;
 use rust_macroquad_ui::basic_composites::margin::margin;
+use rust_macroquad_ui::basic_composites::no_stretch::no_stretch;
+use rust_macroquad_ui::basic_composites::no_stretch::NoStretchMode::Horizontal;
 use rust_macroquad_ui::basic_composites::stretch::{stretch_horizontal, stretch_vertical};
 use rust_macroquad_ui::primitives::{color_fill, height, horizontal_group, vertical_group, width, width_no_stretch};
 use rust_macroquad_ui::primitives::node::{Node, node};
@@ -53,43 +56,40 @@ fn root() -> Node<Event> {
 
 fn right_bottom_panel() -> Node<Event> {
     node().name("right bottom panel")
-        .set(color_fill(WHITE))
-        .set(margin(8.0, node()
-            .set(horizontal_group(
-                [RED, ORANGE, YELLOW, GREEN, BLUE, DARKBLUE, PURPLE].iter()
-                    .map(|color| node().name("icon")
-                        .set(margin((8.0, 0.0), node()
-                            .set(color_fill(*color))
-                            .set(width(32.0))
-                            .set(height(32.0))))
-                    ).collect(),
-            ))))
+        .pad(background(WHITE))
+        .pad(margin(8.0))
+        .set(horizontal_group(
+            [RED, ORANGE, YELLOW, GREEN, BLUE, DARKBLUE, PURPLE].iter()
+                .map(|color| node().name("icon")
+                    .pad(margin((8.0, 0.0)))
+                    .pad(background(*color))
+                    .set(width(32.0))
+                    .set(height(32.0))
+                ).collect(),
+        ))
 }
 
 fn left_panel(text_1: TextStyle) -> Node<Event> {
     node().name("Left panel")
-        .set(width_no_stretch())
-        .set(color_fill(GREEN))
+        .pad(background(GREEN))
+        .pad(no_stretch(Horizontal))
         .set(vertical_group(vec![
-            node().name("minimap frame").set(margin(16.0, node()
+            node()
                 .set(vertical_group(vec![
                     label("The map", (text_1, AlignX::Center, AlignY::Center)),
                     node()
-                        .set(color_fill(BLUE))
+                        .pad(background(BLUE))
                         .set(width(150.0))
                         .set(height(150.0)),
-                ])))),
+                ]))
+                .pad(margin(16.0)),
             stretch_vertical(),
-            node().name("item box")
-                .set(margin(8.0, node()
-                    .set(horizontal_group(vec![
-                        node()
-                            .set(color_fill(RED))
-                            .set(vertical_group((0..5)
-                                .map(|i| label(format!("Item {}", i), text_1)
-                                )
-                                .collect())
-                            ),
-                    ])))),
+            node()
+                .pad(margin(8.0))
+                .pad(background(RED))
+                .set(vertical_group((0..5)
+                    .map(|i| label(format!("Item {}", i), text_1))
+                    .collect())
+                ),
         ]))
 }

@@ -37,7 +37,7 @@ pub enum UiPathStep {
 
 pub trait Element<Event> {
     fn do_phase(&self, _ctx: Ctx<Event>) {}
-    fn deploy(self) -> Self
+    fn expand_padding(self) -> Self
         where Self: Sized {
         self
     }

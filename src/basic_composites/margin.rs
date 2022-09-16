@@ -1,8 +1,13 @@
 use std::fmt::Debug;
-use crate::primitives::group::Group;
 use crate::primitives::{height, horizontal_group, vertical_group, width};
-use crate::primitives::node::{Node, node};
+use crate::primitives::node::{Node, node, NodePadding};
 
+#[derive(Clone, Debug)]
+pub struct Margin {
+    offset: MarginOffset,
+}
+
+#[derive(Copy, Clone, Debug)]
 pub struct MarginOffset {
     pub left: f32,
     pub right: f32,
@@ -51,25 +56,34 @@ impl From<(f32, f32, f32, f32)> for MarginOffset {
     }
 }
 
-pub fn margin<Event: 'static + Clone + Debug, T: Into<MarginOffset>>(t: T, target: Node<Event>) -> Group<Event> {
+impl<Event: 'static + Clone + Debug> NodePadding<Event> for Margin {
+    fn expand_padding(&self, content: Node<Event>) -> Node<Event> {
+        node()
+            .set(
+                horizontal_group(vec![
+                    node().name("frame left")
+                        .set(width(self.offset.left))
+                        .set(height(0.0)),
+                    node().name("frame central column")
+                        .set(vertical_group(vec![
+                            node().name("frame top")
+                                .set(height(self.offset.top))
+                                .set(width(0.0)),
+                            content,
+                            node().name("frame bottom")
+                                .set(height(self.offset.bottom))
+                                .set(width(0.0)),
+                        ])),
+                    node().name("frame right")
+                        .set(width(self.offset.right))
+                        .set(height(0.0)),
+                ]))
+    }
+}
+
+pub fn margin<T: Into<MarginOffset>>(t: T) -> Margin {
     let offset = t.into();
-    horizontal_group(vec![
-            node().name("frame left")
-                .set(width(offset.left))
-                .set(height(0.0)),
-            node().name("frame central column")
-                // .add_component(*target.components.get::<Width>().unwrap_or_else(|| panic!("Width required for margin target {}", target.name.unwrap_or("<node>"))))
-                .set(vertical_group(vec![
-                    node().name("frame top")
-                        .set(height(offset.top))
-                        .set(width(0.0)),
-                    target,
-                    node().name("frame bottom")
-                        .set(height(offset.bottom))
-                        .set(width(0.0)),
-                ])),
-            node().name("frame right")
-                .set(width(offset.right))
-                .set(height(0.0)),
-        ])
+    Margin {
+        offset
+    }
 }

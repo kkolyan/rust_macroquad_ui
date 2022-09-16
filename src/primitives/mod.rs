@@ -49,6 +49,10 @@ pub fn horizontal_group<Event>(children: Vec<Node<Event>>) -> Group<Event> {
     Group::new(Layout::Horizontal, children)
 }
 
+pub fn single<Event>(child: Node<Event>) -> Group<Event> {
+    Group::new(Layout::Horizontal, vec![child])
+}
+
 pub fn vertical_group<Event>(children: Vec<Node<Event>>) -> Group<Event> {
     Group::new(Layout::Vertical, children)
 }

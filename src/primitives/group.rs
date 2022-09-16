@@ -42,6 +42,17 @@ impl<Event> Group<Event> {
 }
 
 impl<Event: Clone + Debug + 'static> Element<Event> for Group<Event> {
+    fn expand_padding(self) -> Self
+        where Self: Sized
+    {
+        Group {
+            layout: self.layout,
+            children: self.children.into_iter()
+                .map(|it| it.expand_padding())
+                .collect()
+        }
+    }
+
     fn do_phase(&self, ctx: Ctx<Event>) {
         match self.layout {
             Layout::Layered => {
