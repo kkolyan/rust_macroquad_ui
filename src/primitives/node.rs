@@ -25,8 +25,9 @@ pub fn node<Event>() -> Node<Event> {
 
 impl<Event: Clone> Node<Event> {
 
-    pub fn set<T: Element<Event> + Clone + Debug + 'static>(mut self, c: T) -> Self {
-        self.components.put(c);
+    pub fn set<T: Element<Event> + Clone + Debug + 'static>(mut self, component: T) -> Self {
+        let deployed = component.deploy();
+        self.components.put(deployed);
         self
     }
 
