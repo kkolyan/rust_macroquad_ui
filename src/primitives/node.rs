@@ -1,5 +1,8 @@
 use std::fmt::Debug;
-use crate::core::{ComponentSet, Ctx, Element};
+use crate::core::{Ctx, Element};
+use crate::make_bounded_composite;
+
+make_bounded_composite! {, ComponentSet<Event>, Element<Event>}
 
 #[derive(Debug, Clone)]
 pub struct Node<Event> {

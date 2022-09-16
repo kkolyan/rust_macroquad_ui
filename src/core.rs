@@ -8,10 +8,7 @@ use macroquad::math::Rect;
 use macroquad::window::screen_height;
 use macroquad::window::screen_width;
 
-use crate::make_bounded_composite;
 use crate::primitives::node::Node;
-
-make_bounded_composite! {pub, ComponentSet<Event>, Element<Event>}
 
 
 #[derive(Clone)]
