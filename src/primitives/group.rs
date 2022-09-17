@@ -157,8 +157,8 @@ fn calc_size_dimension<Event>(
         ctx
     };
     let dimension_value = match dimension {
-        DimensionKey::Horizontal => node.get::<Width>().map(|it| it.0),
-        DimensionKey::Vertical => node.get::<Height>().map(|it| it.0),
+        DimensionKey::Horizontal => node.unique::<Width>().map(|it| it.0),
+        DimensionKey::Vertical => node.unique::<Height>().map(|it| it.0),
     };
     let flow = match dimension_value {
         None => Flow::Calculate(CalculateFlow::AsIs),
@@ -179,7 +179,7 @@ fn calc_size_dimension<Event>(
     match flow {
         Flow::Propagate(size) => size,
         Flow::Calculate(sub_flow) => {
-            match node.get::<Group<Event>>() {
+            match node.unique::<Group<Event>>() {
                 None => panic!(
                     "failed to resolve {:?} size of '{}' ({})",
                     dimension,

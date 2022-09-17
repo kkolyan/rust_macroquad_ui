@@ -18,8 +18,15 @@ pub trait NodePadding<Event> {
 }
 
 impl<Event> Node<Event> {
-    pub(crate) fn get<T: 'static + Element<Event>>(&self) -> Option<&T> {
-        self.components.get()
+    pub(crate) fn unique<T: 'static + Element<Event>>(&self) -> Option<&T> {
+        let option = self.components.get().map(|it| it.collect::<Vec<&T>>());
+        if let Some(candidates) = option {
+            if candidates.len() > 1 {
+                panic!("failed to resolve single component");
+            }
+            return candidates.get(0).copied();
+        }
+        None
     }
 }
 
@@ -35,7 +42,7 @@ impl<Event: Clone> Node<Event> {
 
     pub fn set<T: Element<Event> + Clone + Debug + 'static>(mut self, component: T) -> Self {
         let padded = component.expand_padding();
-        self.components.put(padded);
+        self.components.insert(padded);
         self
     }
 
