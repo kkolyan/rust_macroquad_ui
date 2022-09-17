@@ -11,6 +11,7 @@ pub mod color_fill;
 pub mod border;
 pub mod conditional;
 pub mod node;
+pub mod texture;
 
 
 pub fn color_fill(color: Color) -> ColorFill {
