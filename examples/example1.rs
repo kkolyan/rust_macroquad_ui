@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use macroquad::color::{BLACK, DARKBLUE, ORANGE, PURPLE, YELLOW};
 use macroquad::color::BLUE;
 use macroquad::color::GREEN;
@@ -5,6 +7,7 @@ use macroquad::color::RED;
 use macroquad::color::WHITE;
 use macroquad::input::is_key_pressed;
 use macroquad::input::KeyCode::Escape;
+use macroquad::input::MouseButton::Left;
 use macroquad::window::clear_background;
 use macroquad::window::next_frame;
 
@@ -16,27 +19,53 @@ use rust_macroquad_ui::basic_composites::no_stretch::no_stretch;
 use rust_macroquad_ui::basic_composites::no_stretch::NoStretchMode::Horizontal;
 use rust_macroquad_ui::basic_composites::stretch::{stretch_horizontal, stretch_vertical};
 use rust_macroquad_ui::primitives::{height, horizontal_group, vertical_group, width};
+use rust_macroquad_ui::primitives::mouse::{on_click, on_hover};
 use rust_macroquad_ui::primitives::node::{Node, node};
 use rust_macroquad_ui::primitives::text::TextStyle;
 
 #[derive(Clone, Debug)]
-enum Event {}
+enum Event {
+    Click { item: usize },
+    Hover { item: usize },
+}
+
+struct App {
+    hovered: HashSet<usize>,
+}
 
 #[macroquad::main("UI Example 001")]
 async fn main() {
+    let mut app = App {
+        hovered: Default::default()
+    };
     loop {
         if is_key_pressed(Escape) {
             break;
         }
-        clear_background(BLACK);
-        let root = root();
-        let _ = rust_macroquad_ui::core::collect_layer_events(&root);
-        rust_macroquad_ui::core::draw_layer(&root);
+        do_frame(&mut app);
         next_frame().await;
     }
 }
 
-fn root() -> Node<Event> {
+fn do_frame(app: &mut App) {
+    app.hovered.clear();
+    clear_background(BLACK);
+    let events = rust_macroquad_ui::core::collect_layer_events(&root(app));
+    for event in events {
+        match event {
+            Event::Click { item } => {
+                println!("clicked {}", item);
+            }
+            Event::Hover { item } => {
+                app.hovered.insert(item);
+            }
+        }
+    }
+
+    rust_macroquad_ui::core::draw_layer(&root(app));
+}
+
+fn root(app: &mut App) -> Node<Event> {
     let text_1 = TextStyle {
         font_size: 32.0,
         color: WHITE,
@@ -44,7 +73,7 @@ fn root() -> Node<Event> {
 
     node().name("root")
         .set(horizontal_group(vec![
-            left_panel(text_1),
+            left_panel(text_1, app),
             stretch_horizontal(),
             node().name("Right block")
                 .set(vertical_group(vec![
@@ -69,7 +98,7 @@ fn right_bottom_panel() -> Node<Event> {
         ))
 }
 
-fn left_panel(text_1: TextStyle) -> Node<Event> {
+fn left_panel(text_1: TextStyle, app: &mut App) -> Node<Event> {
     node().name("Left panel")
         .pad(background(GREEN))
         .pad(no_stretch(Horizontal))
@@ -88,7 +117,11 @@ fn left_panel(text_1: TextStyle) -> Node<Event> {
                 .pad(margin(8.0))
                 .pad(background(RED))
                 .set(vertical_group((0..5)
-                    .map(|i| label(format!("Item {}", i), text_1))
+                    .map(|i| label(format!("Item {:?}", i), text_1)
+                        .pad(background(if app.hovered.contains(&i) { ORANGE } else { RED }))
+                        .set(on_click(Left, Event::Click { item: i }))
+                        .set(on_hover(Event::Hover { item: i }))
+                    )
                     .collect())
                 ),
         ]))
