@@ -1,5 +1,5 @@
 use std::fmt::Debug;
-use crate::primitives::{height_no_stretch, single, width_no_stretch};
+use crate::primitives::{height_no_stretch, single_content, width_no_stretch};
 use crate::primitives::node::{Node, node, NodePadding};
 
 #[derive(Copy, Clone, Debug)]
@@ -27,7 +27,7 @@ impl<Event: Clone + Debug + 'static> NodePadding<Event> for NoStretch {
         };
         de_stretch
             .name("no_stretch")
-            .set(single(content))
+            .set(single_content(content))
     }
 }
 

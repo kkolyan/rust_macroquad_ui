@@ -46,15 +46,15 @@ pub fn layers<Event>(children: Vec<Node<Event>>) -> Group<Event> {
     Group::new(Layout::Layered, children)
 }
 
-pub fn horizontal_group<Event>(children: Vec<Node<Event>>) -> Group<Event> {
+pub fn horizontal_content<Event>(children: Vec<Node<Event>>) -> Group<Event> {
     Group::new(Layout::Horizontal, children)
 }
 
-pub fn single<Event>(child: Node<Event>) -> Group<Event> {
+pub fn single_content<Event>(child: Node<Event>) -> Group<Event> {
     Group::new(Layout::Horizontal, vec![child])
 }
 
-pub fn vertical_group<Event>(children: Vec<Node<Event>>) -> Group<Event> {
+pub fn vertical_content<Event>(children: Vec<Node<Event>>) -> Group<Event> {
     Group::new(Layout::Vertical, children)
 }
 

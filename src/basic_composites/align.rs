@@ -1,5 +1,5 @@
 use std::fmt::Debug;
-use crate::primitives::{height, height_stretch, horizontal_group, vertical_group, width, width_stretch};
+use crate::primitives::{height, height_stretch, horizontal_content, vertical_content, width, width_stretch};
 use crate::primitives::node::{Node, node, NodePadding};
 
 #[derive(Debug, Copy, Clone)]
@@ -29,19 +29,19 @@ impl<Event: Clone + Debug + 'static> NodePadding<Event> for Align {
                 .set(width_stretch())
                 .set(height(0.0));
             match self.x {
-                AlignX::Left => node().name("align left").set(horizontal_group(vec![content, stretch_x])),
-                AlignX::Center => node().name("align center (x)").set(horizontal_group(vec![stretch_x.clone(), content, stretch_x])),
-                AlignX::Right => node().name("align right").set(horizontal_group(vec![stretch_x, content])),
+                AlignX::Left => node().name("align left").set(horizontal_content(vec![content, stretch_x])),
+                AlignX::Center => node().name("align center (x)").set(horizontal_content(vec![stretch_x.clone(), content, stretch_x])),
+                AlignX::Right => node().name("align right").set(horizontal_content(vec![stretch_x, content])),
             }
         };
         let stretch_y = node().name("stretch y").set(height_stretch()).set(width(0.0));
         node()
             .name("align")
-            .set(horizontal_group(vec![
+            .set(horizontal_content(vec![
                 match self.y {
-                    AlignY::Top => node().name("align top").set(vertical_group(vec![row, stretch_y])),
-                    AlignY::Center => node().name("align center (y)").set(vertical_group(vec![stretch_y.clone(), row, stretch_y])),
-                    AlignY::Bottom => node().name("align bottom").set(vertical_group(vec![stretch_y, row])),
+                    AlignY::Top => node().name("align top").set(vertical_content(vec![row, stretch_y])),
+                    AlignY::Center => node().name("align center (y)").set(vertical_content(vec![stretch_y.clone(), row, stretch_y])),
+                    AlignY::Bottom => node().name("align bottom").set(vertical_content(vec![stretch_y, row])),
                 }
             ]))
     }

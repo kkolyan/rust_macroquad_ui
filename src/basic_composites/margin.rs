@@ -1,5 +1,5 @@
 use std::fmt::Debug;
-use crate::primitives::{height, horizontal_group, vertical_group, width};
+use crate::primitives::{height, horizontal_content, vertical_content, width};
 use crate::primitives::node::{Node, node, NodePadding};
 
 #[derive(Clone, Debug)]
@@ -61,12 +61,12 @@ impl<Event: 'static + Clone + Debug> NodePadding<Event> for Margin {
         node()
             .name("margin")
             .set(
-                horizontal_group(vec![
+                horizontal_content(vec![
                     node().name("frame left")
                         .set(width(self.offset.left))
                         .set(height(0.0)),
                     node().name("frame central column")
-                        .set(vertical_group(vec![
+                        .set(vertical_content(vec![
                             node().name("frame top")
                                 .set(height(self.offset.top))
                                 .set(width(0.0)),

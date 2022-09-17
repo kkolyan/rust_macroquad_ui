@@ -1,6 +1,6 @@
 use std::fmt::Debug;
 use macroquad::color::Color;
-use crate::primitives::{color_fill, single};
+use crate::primitives::{color_fill, single_content};
 use crate::primitives::node::{Node, node, NodePadding};
 
 #[derive(Copy, Clone, Debug)]
@@ -13,7 +13,7 @@ impl<Event: Clone + Debug + 'static> NodePadding<Event> for Background {
         node()
             .name("background")
             .set(color_fill(self.color))
-            .set(single(content))
+            .set(single_content(content))
     }
 }
 
