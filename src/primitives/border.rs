@@ -18,3 +18,10 @@ impl<Event> Element<Event> for Border {
         }
     }
 }
+
+pub fn border(thickness: f32, color: Color) -> Border {
+    Border {
+        thickness,
+        color
+    }
+}
