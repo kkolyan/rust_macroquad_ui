@@ -2,7 +2,6 @@ use std::fmt::Debug;
 use macroquad::math::Rect;
 use crate::core::Element;
 use crate::core::Ctx;
-use crate::core::UiPathStep;
 use crate::primitives::node::Node;
 
 #[derive(Debug, Copy, Clone)]
@@ -72,7 +71,7 @@ impl<Event: Clone + Debug + 'static> Group<Event> {
             .map(|(i, it)| (it, calc_size_dimension(
                 it,
                 dimension,
-                &ctx.step_down(UiPathStep::Index(i)),
+                &ctx.step_down_i(i),
             )))
             .collect();
         let stretch_size = {
@@ -102,10 +101,12 @@ impl<Event: Clone + Debug + 'static> Group<Event> {
                 CalculatedSize::Fixed(value) => value,
                 CalculatedSize::Stretch { fixed_part } => fixed_part + stretch_size,
             };
-            let mut ctx = ctx.step_down(UiPathStep::Index(i));
-            if let Some(name) = child.get_name() {
-                ctx = ctx.step_down(UiPathStep::Name(name));
-            }
+            let ctx = ctx.step_down_i(i);
+            let ctx = if let Some(name) = child.get_name() {
+                ctx.step_down(name)
+            } else {
+                ctx
+            };
             child.do_phase(ctx
                 .clone_with(|ctx| ctx.area = Rect::new(
                     match dimension {
@@ -149,10 +150,12 @@ fn calc_size_dimension<Event>(
 ) -> CalculatedSize
     where Event: Clone + Debug + 'static
 {
-    let mut ctx = ctx.clone();
-    if let Some(name) = node.get_name() {
-        ctx = ctx.step_down(UiPathStep::Name(name));
-    }
+    let ctx = ctx.clone();
+    let ctx = if let Some(name) = node.get_name() {
+        ctx.step_down(name)
+    } else {
+        ctx
+    };
     let dimension_value = match dimension {
         DimensionKey::Horizontal => node.get::<Width>().map(|it| it.0),
         DimensionKey::Vertical => node.get::<Height>().map(|it| it.0),
@@ -199,7 +202,7 @@ fn calc_size_dimension<Event>(
                     let final_size = group.children.iter().enumerate()
                         .map(|(i, it)| calc_size_dimension(
                             it, dimension,
-                            &ctx.step_down(UiPathStep::Index(i)),
+                            &ctx.step_down_i(i),
                         ))
                         .reduce(merge_strategy)
                         .unwrap_or(CalculatedSize::Stretch { fixed_part: 0.0 });

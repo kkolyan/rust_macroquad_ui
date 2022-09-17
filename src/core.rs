@@ -9,24 +9,24 @@ use macroquad::window::screen_width;
 use crate::primitives::node::Node;
 
 
-#[derive(Clone)]
+#[derive(Clone, Copy, Debug)]
 pub enum Phase<'a, Event> {
     Draw { events: &'a Vec<Event> },
     CollectEvents { collected: &'a RefCell<Vec<Event>> },
 }
 
-#[derive(Clone)]
+#[derive(Clone, Copy, Debug)]
 pub struct Ctx<'a, Event> {
     pub area: Rect,
     pub scale: f32,
     pub phase: Phase<'a, Event>,
-    pub path: VecDeque<UiPathStep>,
+    pub path: UiPathStep<'a>,
 }
 
 #[derive(Copy, Clone, Debug)]
-pub enum UiPathStep {
-    Name(&'static str),
-    Index(usize),
+pub enum UiPathStep<'a> {
+    Name(&'static str, Option<&'a UiPathStep<'a>>),
+    Index(usize, Option<&'a UiPathStep<'a>>),
 }
 
 pub trait Element<Event> {
@@ -59,18 +59,30 @@ impl<'a, Event: Clone> Ctx<'a, Event> {
             area,
             scale,
             phase,
-            path: Default::default(),
+            path: UiPathStep::Name("root", None),
         }
     }
 
     pub fn backtrace(&self) -> String {
+        let mut parts = VecDeque::new();
+        let mut _step = Some(&self.path);
+        while let Some(step) = _step {
+            _step = match *step {
+                UiPathStep::Name(name, parent) => {
+                    parts.push_front(name.to_owned());
+                    parent
+                }
+                UiPathStep::Index(index, parent) => {
+                    parts.push_front(format!("{}", index));
+                    parent
+                }
+            };
+        }
+
         let mut s = String::new();
-        for step in &self.path {
+        for part in parts.iter().rev() {
             s.push('/');
-            match step {
-                UiPathStep::Name(name) => s.push_str(name),
-                UiPathStep::Index(index) => s.push_str(format!("{}", index).as_str())
-            }
+            s.push_str(part);
         }
         s
     }
@@ -81,9 +93,15 @@ impl<'a, Event: Clone> Ctx<'a, Event> {
         v
     }
 
-    pub fn step_down(&self, step: UiPathStep) -> Self {
+    pub fn step_down(&'a self, step: &'static str) -> Self {
         let mut v: Self = self.clone();
-        v.path.push_back(step);
+        v.path = UiPathStep::Name(step, Some(&self.path));
+        v
+    }
+
+    pub fn step_down_i(&'a self, step: usize) -> Self {
+        let mut v: Self = self.clone();
+        v.path = UiPathStep::Index(step, Some(&self.path));
         v
     }
 }
