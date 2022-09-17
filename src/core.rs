@@ -1,5 +1,4 @@
 use std::cell::RefCell;
-use std::collections::{HashSet};
 use std::collections::VecDeque;
 use std::fmt::Debug;
 use std::rc::Rc;
@@ -12,20 +11,16 @@ use crate::primitives::node::Node;
 
 
 #[derive(Clone)]
-pub enum Phase<Event> {
-    Draw,
-    CollectEvents { on_event: Rc<dyn Fn(&Event)> },
+pub enum Phase<'a, Event> {
+    Draw { events: &'a Vec<Event> },
+    CollectEvents { collected: Rc<RefCell<Vec<Event>>> },
 }
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
-pub struct Flag(pub &'static str);
-
 #[derive(Clone)]
-pub struct Ctx<Event> {
+pub struct Ctx<'a, Event> {
     pub area: Rect,
     pub scale: f32,
-    pub flags: HashSet<Flag>,
-    pub phase: Phase<Event>,
+    pub phase: Phase<'a, Event>,
     pub path: VecDeque<UiPathStep>,
 }
 
@@ -45,28 +40,26 @@ pub trait Element<Event> {
 
 pub fn collect_layer_events<Event: 'static + Clone>(layer_root: &Node<Event>) -> Vec<Event> {
     let events = Rc::new(RefCell::from(vec![]));
-    let events2 = events.clone();
     layer_root.do_phase(Ctx::new(
         Rect::new(0.0, 0.0, screen_width(), screen_height()),
         1.0,
         Phase::CollectEvents {
-            on_event: Rc::new(move |it| events2.borrow_mut().push(it.clone()))
+            collected: events.clone()
         },
     ));
     events.take()
 }
 
-pub fn draw_layer<Event: Clone>(layer_root: &Node<Event>) {
-    layer_root.do_phase(Ctx::new(Rect::new(0.0, 0.0, screen_width(), screen_height()), 1.0, Phase::Draw));
+pub fn draw_layer<Event: Clone>(layer_root: &Node<Event>, events: &Vec<Event>) {
+    layer_root.do_phase(Ctx::new(Rect::new(0.0, 0.0, screen_width(), screen_height()), 1.0, Phase::Draw { events }));
 }
 
-impl<Event: Clone> Ctx<Event> {
-    pub fn new(area: Rect, scale: f32, phase: Phase<Event>) -> Self {
+impl<'a, Event: Clone> Ctx<'a, Event> {
+    pub fn new(area: Rect, scale: f32, phase: Phase<'a, Event>) -> Self {
         Ctx {
             area,
             scale,
             phase,
-            flags: Default::default(),
             path: Default::default(),
         }
     }

@@ -36,6 +36,7 @@ impl<Event: Clone + Debug + 'static> NodePadding<Event> for Align {
         };
         let stretch_y = node().name("stretch y").set(height_stretch()).set(width(0.0));
         node()
+            .name("align")
             .set(horizontal_group(vec![
                 match self.y {
                     AlignY::Top => node().name("align top").set(vertical_group(vec![row, stretch_y])),

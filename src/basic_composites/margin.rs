@@ -59,6 +59,7 @@ impl From<(f32, f32, f32, f32)> for MarginOffset {
 impl<Event: 'static + Clone + Debug> NodePadding<Event> for Margin {
     fn expand_padding(&self, content: Node<Event>) -> Node<Event> {
         node()
+            .name("margin")
             .set(
                 horizontal_group(vec![
                     node().name("frame left")

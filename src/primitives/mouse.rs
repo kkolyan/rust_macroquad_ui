@@ -1,8 +1,9 @@
 use std::fmt::Debug;
-use macroquad::input::{ is_mouse_button_pressed, mouse_position, MouseButton};
+
+use macroquad::input::{is_mouse_button_pressed, mouse_position, MouseButton};
 use macroquad::math::Vec2;
-use crate::core::{Ctx, Element, Flag, UiPathStep, Phase};
-use crate::primitives::node::Node;
+
+use crate::core::{Ctx, Element, Phase};
 
 #[derive(Debug, Clone)]
 pub struct MouseButtonHandler<Event: Debug + Clone> {
@@ -18,15 +19,15 @@ impl<Event: Debug + Clone> Element<Event> for MouseButtonHandler<Event> {
     fn do_phase(&self, ctx: Ctx<Event>) {
         let area = ctx.area;
         match ctx.phase {
-            Phase::Draw => {}
-            Phase::CollectEvents { on_event } => {
+            Phase::Draw { .. } => {}
+            Phase::CollectEvents { collected } => {
                 let mut hits = None;
-                for (button, event_id) in &self.on_click {
+                for (button, event_id) in self.on_click.clone() {
                     if hits.is_none() {
                         hits = Some(area.contains(Vec2::from(mouse_position())));
                     }
-                    if hits.unwrap() && is_mouse_button_pressed(*button) {
-                        on_event(event_id);
+                    if hits.unwrap() && is_mouse_button_pressed(button) {
+                        collected.borrow_mut().push(event_id);
                     }
                 }
             }
@@ -38,39 +39,15 @@ impl<Event: Debug + Clone> Element<Event> for MouseHoverHandler<Event> {
     fn do_phase(&self, ctx: Ctx<Event>) {
         let area = ctx.area;
         match ctx.phase {
-            Phase::Draw => {}
-            Phase::CollectEvents { on_event } => {
+            Phase::Draw { .. } => {}
+            Phase::CollectEvents { collected } => {
                 let mut hits = None;
                 if hits.is_none() {
                     hits = Some(area.contains(Vec2::from(mouse_position())));
                 }
                 if hits.unwrap() {
-                    on_event(&self.on_hover);
+                    collected.borrow_mut().push(self.on_hover.clone());
                 }
-            }
-        }
-    }
-}
-
-pub struct FlagOnHover<Event> {
-    target: Node<Event>,
-    flag: Flag,
-}
-
-impl<Event: Clone> Element<Event> for FlagOnHover<Event> {
-    fn do_phase(&self, ctx: Ctx<Event>) {
-        let ctx = ctx.step_down(UiPathStep::Name("FlagOnHover"));
-        match ctx.phase {
-            Phase::Draw => {
-                let hits = ctx.area.contains(Vec2::from(mouse_position()));
-                if hits {
-                    self.target.do_phase(ctx.clone_with(|ctx| assert!(!ctx.flags.insert(self.flag), "duplicate flag: {:?}", self.flag)));
-                } else {
-                    self.target.do_phase(ctx.clone());
-                };
-            }
-            Phase::CollectEvents { .. } => {
-                self.target.do_phase(ctx.clone());
             }
         }
     }

@@ -23,7 +23,7 @@ pub struct TextStyle {
 impl<Event> Element<Event> for Text {
     fn do_phase(&self, ctx: Ctx<Event>) {
         match ctx.phase {
-            Phase::Draw => {
+            Phase::Draw { .. } => {
                 let text = self.value.as_str();
                 let size = self.measure_self();
                 let pos = Vec2::new(ctx.area.x, ctx.area.y + size.offset_y + 0.125 * self.style.font_size);

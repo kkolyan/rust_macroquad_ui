@@ -18,15 +18,16 @@ use rust_macroquad_ui::basic_composites::margin::margin;
 use rust_macroquad_ui::basic_composites::no_stretch::no_stretch;
 use rust_macroquad_ui::basic_composites::no_stretch::NoStretchMode::Horizontal;
 use rust_macroquad_ui::basic_composites::stretch::{stretch_horizontal, stretch_vertical};
-use rust_macroquad_ui::primitives::{height, horizontal_group, vertical_group, width};
+use rust_macroquad_ui::primitives::{color_fill, height, horizontal_group, single, vertical_group, width};
+use rust_macroquad_ui::primitives::conditional::{conditional};
 use rust_macroquad_ui::primitives::mouse::{on_click, on_hover};
 use rust_macroquad_ui::primitives::node::{Node, node};
 use rust_macroquad_ui::primitives::text::TextStyle;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
 enum Event {
-    Click { item: usize },
-    Hover { item: usize },
+    Click(usize),
+    Hover(usize),
 }
 
 struct App {
@@ -50,22 +51,22 @@ async fn main() {
 fn do_frame(app: &mut App) {
     app.hovered.clear();
     clear_background(BLACK);
-    let events = rust_macroquad_ui::core::collect_layer_events(&root(app));
-    for event in events {
+    let events = rust_macroquad_ui::core::collect_layer_events(&root());
+    for event in events.iter() {
         match event {
-            Event::Click { item } => {
+            Event::Click(item) => {
                 println!("clicked {}", item);
             }
-            Event::Hover { item } => {
-                app.hovered.insert(item);
+            Event::Hover(item) => {
+                app.hovered.insert(*item);
             }
         }
     }
 
-    rust_macroquad_ui::core::draw_layer(&root(app));
+    rust_macroquad_ui::core::draw_layer(&root(), &events);
 }
 
-fn root(app: &mut App) -> Node<Event> {
+fn root() -> Node<Event> {
     let text_1 = TextStyle {
         font_size: 32.0,
         color: WHITE,
@@ -73,7 +74,7 @@ fn root(app: &mut App) -> Node<Event> {
 
     node().name("root")
         .set(horizontal_group(vec![
-            left_panel(text_1, app),
+            left_panel(text_1),
             stretch_horizontal(),
             node().name("Right block")
                 .set(vertical_group(vec![
@@ -98,7 +99,7 @@ fn right_bottom_panel() -> Node<Event> {
         ))
 }
 
-fn left_panel(text_1: TextStyle, app: &mut App) -> Node<Event> {
+fn left_panel(text_1: TextStyle) -> Node<Event> {
     node().name("Left panel")
         .pad(background(GREEN))
         .pad(no_stretch(Horizontal))
@@ -115,12 +116,17 @@ fn left_panel(text_1: TextStyle, app: &mut App) -> Node<Event> {
             stretch_vertical(),
             node()
                 .pad(margin(8.0))
-                .pad(background(RED))
                 .set(vertical_group((0..5)
-                    .map(|i| label(format!("Item {:?}", i), text_1)
-                        .pad(background(if app.hovered.contains(&i) { ORANGE } else { RED }))
-                        .set(on_click(Left, Event::Click { item: i }))
-                        .set(on_hover(Event::Hover { item: i }))
+                    .map(|i| node()
+                        .set(on_click(Left, Event::Click(i)))
+                        .set(on_hover(Event::Hover(i)))
+                        .set(conditional((
+                            Some(color_fill(RED)),
+                            [(Event::Hover(i), Some(color_fill(ORANGE)))]
+                        )))
+                        .set(single(
+                            label(format!("Item {:?}", i), text_1)
+                        ))
                     )
                     .collect())
                 ),

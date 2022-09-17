@@ -11,7 +11,7 @@ pub struct Border {
 impl<Event> Element<Event> for Border {
     fn do_phase(&self, ctx: Ctx<Event>)  {
         match ctx.phase {
-            Phase::Draw => {
+            Phase::Draw { .. } => {
                 draw_rectangle_lines(ctx.area.x, ctx.area.y, ctx.area.w, ctx.area.y, self.thickness, self.color);
             }
             Phase::CollectEvents { .. } => {}

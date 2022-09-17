@@ -25,7 +25,9 @@ impl<Event: Clone + Debug + 'static> NodePadding<Event> for NoStretch {
                 .set(height_no_stretch())
                 .set(width_no_stretch()),
         };
-        de_stretch.set(single(content))
+        de_stretch
+            .name("no_stretch")
+            .set(single(content))
     }
 }
 
