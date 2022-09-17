@@ -1,7 +1,6 @@
 use std::cell::RefCell;
 use std::collections::VecDeque;
 use std::fmt::Debug;
-use std::rc::Rc;
 
 use macroquad::math::Rect;
 use macroquad::window::screen_height;
@@ -13,7 +12,7 @@ use crate::primitives::node::Node;
 #[derive(Clone)]
 pub enum Phase<'a, Event> {
     Draw { events: &'a Vec<Event> },
-    CollectEvents { collected: Rc<RefCell<Vec<Event>>> },
+    CollectEvents { collected: &'a RefCell<Vec<Event>> },
 }
 
 #[derive(Clone)]
@@ -39,12 +38,12 @@ pub trait Element<Event> {
 }
 
 pub fn collect_layer_events<Event: 'static + Clone>(layer_root: &Node<Event>) -> Vec<Event> {
-    let events = Rc::new(RefCell::from(vec![]));
+    let events = RefCell::from(vec![]);
     layer_root.do_phase(Ctx::new(
         Rect::new(0.0, 0.0, screen_width(), screen_height()),
         1.0,
         Phase::CollectEvents {
-            collected: events.clone()
+            collected: &events
         },
     ));
     events.take()

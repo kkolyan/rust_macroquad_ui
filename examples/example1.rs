@@ -1,4 +1,3 @@
-use std::collections::HashSet;
 
 use macroquad::color::{BLACK, DARKBLUE, ORANGE, PURPLE, YELLOW};
 use macroquad::color::BLUE;
@@ -47,7 +46,7 @@ async fn main() {
     }
 }
 
-fn do_frame(app: &mut App) {
+fn do_frame(_: &mut App) {
     clear_background(BLACK);
     let events = rust_macroquad_ui::core::collect_layer_events(&root());
     for event in events.iter() {
