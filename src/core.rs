@@ -64,16 +64,16 @@ impl<'a, Event: Clone> Ctx<'a, Event> {
     }
 
     pub fn backtrace(&self) -> String {
-        let mut parts = VecDeque::new();
+        let mut parts = vec![];
         let mut _step = Some(&self.path);
         while let Some(step) = _step {
             _step = match *step {
                 UiPathStep::Name(name, parent) => {
-                    parts.push_front(name.to_owned());
+                    parts.push(name.to_owned());
                     parent
                 }
                 UiPathStep::Index(index, parent) => {
-                    parts.push_front(format!("{}", index));
+                    parts.push(format!("{}", index));
                     parent
                 }
             };
