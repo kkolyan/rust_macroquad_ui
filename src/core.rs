@@ -37,22 +37,6 @@ pub trait Element<Event> {
     }
 }
 
-pub fn collect_layer_events<Event: 'static + Clone>(layer_root: &Node<Event>) -> Vec<Event> {
-    let events = RefCell::from(vec![]);
-    layer_root.do_phase(Ctx::new(
-        Rect::new(0.0, 0.0, screen_width(), screen_height()),
-        1.0,
-        Phase::CollectEvents {
-            collected: &events
-        },
-    ));
-    events.take()
-}
-
-pub fn draw_layer<Event: Clone>(layer_root: &Node<Event>, events: &Vec<Event>) {
-    layer_root.do_phase(Ctx::new(Rect::new(0.0, 0.0, screen_width(), screen_height()), 1.0, Phase::Draw { events }));
-}
-
 impl<'a, Event: Clone> Ctx<'a, Event> {
     pub fn new(area: Rect, scale: f32, phase: Phase<'a, Event>) -> Self {
         Ctx {

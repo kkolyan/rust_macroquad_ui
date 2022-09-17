@@ -24,6 +24,7 @@ use rust_macroquad_ui::primitives::conditional::{conditional};
 use rust_macroquad_ui::primitives::mouse::{on_click, on_hover, on_pressed};
 use rust_macroquad_ui::primitives::node::{Node, node};
 use rust_macroquad_ui::primitives::text::TextStyle;
+use rust_macroquad_ui::UILayer;
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 enum Event {
@@ -32,24 +33,22 @@ enum Event {
     Hover(usize),
 }
 
-struct App {}
-
 #[macroquad::main("UI Example 001")]
 async fn main() {
-    let mut app = App {};
     loop {
         if is_key_pressed(Escape) {
             break;
         }
-        do_frame(&mut app);
+        do_frame();
         next_frame().await;
     }
 }
 
-fn do_frame(_: &mut App) {
+fn do_frame() {
     clear_background(BLACK);
-    let events = rust_macroquad_ui::core::collect_layer_events(&root());
-    for event in events.iter() {
+    let mut layer = UILayer::new(1.0, root());
+    layer.update();
+    for event in layer.get_events() {
         match event {
             Event::Click(item) => {
                 println!("clicked {}", item);
@@ -58,8 +57,7 @@ fn do_frame(_: &mut App) {
             Event::Pressed(_) => {}
         }
     }
-
-    rust_macroquad_ui::core::draw_layer(&root(), &events);
+    layer.draw();
 }
 
 fn root() -> Node<Event> {

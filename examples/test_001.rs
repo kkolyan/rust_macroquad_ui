@@ -3,11 +3,11 @@ use macroquad::input::is_key_pressed;
 use macroquad::input::KeyCode::Escape;
 use macroquad::window::next_frame;
 use rust_macroquad_ui::basic_composites::label::label;
-use rust_macroquad_ui::basic_composites::stretch::{stretch_horizontal, stretch_vertical};
-use rust_macroquad_ui::core::{collect_layer_events, draw_layer};
-use rust_macroquad_ui::primitives::{color_fill, height, horizontal_content, vertical_content, width};
+use rust_macroquad_ui::basic_composites::stretch::{stretch_vertical};
+use rust_macroquad_ui::primitives::{ vertical_content, width};
 use rust_macroquad_ui::primitives::border::border;
 use rust_macroquad_ui::primitives::node::node;
+use rust_macroquad_ui::{UILayer};
 
 #[macroquad::main("test 001")]
 async fn main() {
@@ -36,6 +36,8 @@ fn do_frame() {
                     stretch_vertical(),
                 ])),
         ]));
-    let events = collect_layer_events(&root);
-    draw_layer(&root, &events);
+
+    let mut layer = UILayer::new(1.0, root);
+    layer.update();
+    layer.draw();
 }
