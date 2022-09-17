@@ -106,7 +106,7 @@ fn left_panel(text_1: TextStyle) -> Node<Event> {
         .set(vertical_content(vec![
             node()
                 .set(vertical_content(vec![
-                    label("The map", (text_1, AlignX::Center, AlignY::Center)),
+                    label("The map", text_1),
                     node()
                         .pad(background(BLUE))
                         .set(width(150.0))

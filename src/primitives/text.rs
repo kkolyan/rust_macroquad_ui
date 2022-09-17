@@ -20,6 +20,12 @@ pub struct TextStyle {
     pub color: Color,
 }
 
+impl From<(f32, Color)> for TextStyle {
+    fn from((font_size, color): (f32, Color)) -> Self {
+        TextStyle { font_size, color }
+    }
+}
+
 impl<Event> Element<Event> for Text {
     fn do_phase(&self, ctx: Ctx<Event>) {
         match ctx.phase {
