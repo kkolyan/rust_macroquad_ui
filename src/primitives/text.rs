@@ -32,7 +32,7 @@ impl<Event> Element<Event> for Text {
             Phase::Draw { .. } => {
                 let text = self.value.as_str();
                 let size = self.measure_self();
-                let pos = Vec2::new(ctx.area.x, ctx.area.y + size.offset_y + 0.125 * self.style.font_size);
+                let pos = Vec2::new(ctx.area.x, ctx.area.y + size.offset_y + 0.2 * self.style.font_size);
                 draw_text(text, pos.x, pos.y, self.style.font_size, self.style.color);
             }
             Phase::CollectEvents { .. } => {}

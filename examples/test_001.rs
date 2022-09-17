@@ -31,7 +31,7 @@ fn do_frame() {
             node()
                 .name("label box")
                 .set(vertical_content(vec![
-                    label("Hi", (30.0, WHITE))
+                    label("0 Hiyp", (30.0, WHITE))
                         .set(border(1.0, GRAY)),
                     stretch_vertical(),
                 ])),
