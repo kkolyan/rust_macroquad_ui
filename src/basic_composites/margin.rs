@@ -8,50 +8,36 @@ pub struct Margin {
 }
 
 #[derive(Copy, Clone, Debug)]
-pub struct MarginOffset {
-    pub left: f32,
-    pub right: f32,
-    pub bottom: f32,
-    pub top: f32,
-    #[allow(dead_code)]
-    private: (),
+struct MarginOffset {
+    left: f32,
+    right: f32,
+    bottom: f32,
+    top: f32,
 }
 
-impl From<f32> for MarginOffset {
+impl From<f32> for Margin {
     fn from(margin: f32) -> Self {
-        MarginOffset {
-            left: margin,
-            right: margin,
-            bottom: margin,
-            top: margin,
-            private: (),
-        }
+        (margin, margin).into()
     }
 }
 
-impl From<(f32, f32)> for MarginOffset {
-    fn from(hv: (f32, f32)) -> Self {
-        let (h, v) = hv;
-        MarginOffset {
-            left: h,
-            right: h,
-            bottom: v,
-            top: v,
-            private: (),
-        }
+impl From<(f32, f32)> for Margin {
+    fn from((h, v): (f32, f32)) -> Self {
+        (v, h, v, h).into()
     }
 }
 
-impl From<(f32, f32, f32, f32)> for MarginOffset {
+impl From<(f32, f32, f32, f32)> for Margin {
     //noinspection SpellCheckingInspection
     fn from(trbl: (f32, f32, f32, f32)) -> Self {
         let (top, right, bottom, left) = trbl;
-        MarginOffset {
-            left,
-            right,
-            bottom,
-            top,
-            private: (),
+        Margin {
+            offset: MarginOffset {
+                left,
+                right,
+                bottom,
+                top,
+            }
         }
     }
 }
@@ -82,9 +68,6 @@ impl<Event: 'static + Clone + Debug> NodePadding<Event> for Margin {
     }
 }
 
-pub fn margin<T: Into<MarginOffset>>(t: T) -> Margin {
-    let offset = t.into();
-    Margin {
-        offset
-    }
+pub fn margin<T: Into<Margin>>(t: T) -> Margin {
+    t.into()
 }
