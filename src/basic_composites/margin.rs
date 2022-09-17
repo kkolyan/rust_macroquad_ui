@@ -61,12 +61,12 @@ impl<Event: 'static + Clone + Debug> NodePadding<Event> for Margin {
         node()
             .name("margin")
             .set(
-                horizontal_content(vec![
+                horizontal_content([
                     node().name("frame left")
                         .set(width(self.offset.left))
                         .set(height(0.0)),
                     node().name("frame central column")
-                        .set(vertical_content(vec![
+                        .set(vertical_content([
                             node().name("frame top")
                                 .set(height(self.offset.top))
                                 .set(width(0.0)),

@@ -42,20 +42,20 @@ pub fn height_no_stretch() -> Height {
     Height(Dimension::RemoveStretch)
 }
 
-pub fn layers<Event>(children: Vec<Node<Event>>) -> Group<Event> {
-    Group::new(Layout::Layered, children)
+pub fn layers<Event: Clone, const N: usize>(children: [Node<Event>; N]) -> Group<Event> {
+    Group::new(Layout::Layered, children.to_vec())
 }
 
-pub fn horizontal_content<Event>(children: Vec<Node<Event>>) -> Group<Event> {
-    Group::new(Layout::Horizontal, children)
+pub fn horizontal_content<Event: Clone, T: Into<Vec<Node<Event>>>>(children: T) -> Group<Event> {
+    Group::new(Layout::Horizontal, children.into())
+}
+
+pub fn vertical_content<Event: Clone, T: Into<Vec<Node<Event>>>>(children: T) -> Group<Event> {
+    Group::new(Layout::Vertical, children.into())
 }
 
 pub fn single_content<Event>(child: Node<Event>) -> Group<Event> {
     Group::new(Layout::Horizontal, vec![child])
-}
-
-pub fn vertical_content<Event>(children: Vec<Node<Event>>) -> Group<Event> {
-    Group::new(Layout::Vertical, children)
 }
 
 pub fn text<S: Into<String>>(value: S, style: TextStyle) -> Text {

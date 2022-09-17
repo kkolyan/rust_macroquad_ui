@@ -26,11 +26,11 @@ enum Event {}
 fn do_frame() {
     let root = node::<Event>()
         .name("root")
-        .set(vertical_content(vec![
+        .set(vertical_content([
             stretch_vertical().name("top area"),
             node()
                 .name("label box")
-                .set(vertical_content(vec![
+                .set(vertical_content([
                     label("0 Hiyp", (30.0, WHITE))
                         .set(border(1.0, GRAY)),
                     stretch_vertical(),

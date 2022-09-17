@@ -8,12 +8,10 @@ use std::slice::Iter;
 use crate::core::{Ctx, Phase};
 use crate::primitives::node::Node;
 
-pub mod composite;
-pub mod composite_bounded;
 pub mod primitives;
 pub mod core;
 pub mod basic_composites;
-pub mod any_box;
+pub mod common;
 
 pub struct UILayer<Event> {
     events: Vec<Event>,

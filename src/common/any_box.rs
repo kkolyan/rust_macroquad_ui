@@ -53,7 +53,7 @@ impl Debug for AnyBox {
         #[derive(core::clone::Clone)]
         $vis struct $struct_name$(<$struct_name_param>)? {
             $(pd: std::marker::PhantomData<$bound_param>,)?
-            target: crate::any_box::AnyBox,
+            target: crate::common::any_box::AnyBox,
             dyn_caster: fn(&$struct_name$(<$struct_name_param>)?) -> &dyn $bound$(<$bound_param>)?,
         }
 
@@ -67,7 +67,7 @@ impl Debug for AnyBox {
             pub fn new<T: Debug + Clone + 'static + $bound$(<$bound_param>)?>(value: T) -> $struct_name$(<$struct_name_param>)? {
                 $struct_name {
                     $(pd: std::marker::PhantomData::<$bound_param>::default(),)?
-                    target: crate::any_box::AnyBox::new(value),
+                    target: crate::common::any_box::AnyBox::new(value),
                     dyn_caster: |it| unsafe { &*(it.cast_ref::<T>().unwrap() as *const dyn $bound$(<$bound_param>)?) },
                 }
             }

@@ -6,21 +6,20 @@ use macroquad::color::WHITE;
 use macroquad::input::is_key_pressed;
 use macroquad::input::KeyCode::Escape;
 use macroquad::input::MouseButton::Left;
-use macroquad::math::Vec2;
 use macroquad::texture::Texture2D;
 use macroquad::window::clear_background;
 use macroquad::window::next_frame;
 
-use rust_macroquad_ui::basic_composites::align::{AlignX, AlignY};
 use rust_macroquad_ui::basic_composites::background::background;
-use rust_macroquad_ui::basic_composites::icon::icon;
+use rust_macroquad_ui::basic_composites::icon::{icon, IconSize};
 use rust_macroquad_ui::basic_composites::label::label;
 use rust_macroquad_ui::basic_composites::margin::margin;
 use rust_macroquad_ui::basic_composites::no_stretch::no_stretch;
 use rust_macroquad_ui::basic_composites::no_stretch::NoStretchMode::Horizontal;
 use rust_macroquad_ui::basic_composites::stretch::{stretch_horizontal, stretch_vertical};
+use rust_macroquad_ui::common::to_vec::ToVec;
 use rust_macroquad_ui::primitives::{color_fill, height, horizontal_content, single_content, vertical_content, width};
-use rust_macroquad_ui::primitives::conditional::{conditional};
+use rust_macroquad_ui::primitives::conditional::conditional;
 use rust_macroquad_ui::primitives::mouse::{on_click, on_hover, on_pressed};
 use rust_macroquad_ui::primitives::node::{Node, node};
 use rust_macroquad_ui::primitives::text::TextStyle;
@@ -67,11 +66,11 @@ fn root() -> Node<Event> {
     };
 
     node().name("root")
-        .set(horizontal_content(vec![
+        .set(horizontal_content([
             left_panel(text_1),
             stretch_horizontal(),
             node().name("Right block")
-                .set(vertical_content(vec![
+                .set(vertical_content([
                     stretch_vertical(),
                     right_bottom_panel(),
                 ])),
@@ -83,17 +82,17 @@ fn right_bottom_panel() -> Node<Event> {
         .pad(background(WHITE))
         .pad(margin(8.0))
         .set(horizontal_content(
-            [RED, ORANGE, YELLOW, GREEN, BLUE, DARKBLUE, PURPLE].iter()
+            [RED, ORANGE, YELLOW, GREEN, BLUE, DARKBLUE, PURPLE]
                 .map(|color|
                     node()
-                        .set(single_content(icon((
+                        .set(single_content(icon(
                             Texture2D::from_file_with_format(include_bytes!("cat.png"), None),
                             BLACK,
-                            Vec2::new(32.0, 32.0)
-                        ))))
+                            IconSize::Fixed(32.0, 32.0)
+                        )))
                         .pad(margin((8.0, 0.0)))
                         .pad(background(color))
-                ).collect(),
+                ),
         ))
 }
 
@@ -101,9 +100,9 @@ fn left_panel(text_1: TextStyle) -> Node<Event> {
     node().name("Left panel")
         .pad(background(GREEN))
         .pad(no_stretch(Horizontal))
-        .set(vertical_content(vec![
+        .set(vertical_content([
             node()
-                .set(vertical_content(vec![
+                .set(vertical_content([
                     label("The map", text_1),
                     node()
                         .pad(background(BLUE))
@@ -130,7 +129,7 @@ fn left_panel(text_1: TextStyle) -> Node<Event> {
                             label(format!("Item {:?}", i), text_1)
                         ))
                     )
-                    .collect())
+                    .to_vec())
                 ),
         ]))
 }

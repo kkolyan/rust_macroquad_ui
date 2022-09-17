@@ -4,22 +4,22 @@
 
         #[derive(core::clone::Clone, std::fmt::Debug)]
         $vis struct $struct_name$(<$struct_name_param>)? {
-            target: crate::composite::Composite,
+            target: crate::common::composite::Composite,
             ptrs: Vec<*const dyn $bound$(<$bound_param>)?>,
         }
 
         impl $(<$struct_name_param>)? $struct_name$(<$struct_name_param>)? {
             pub fn new() -> $struct_name$(<$struct_name_param>)? {
                 $struct_name {
-                    target: crate::composite::Composite::new(),
+                    target: crate::common::composite::Composite::new(),
                     ptrs: vec![],
                 }
             }
 
             pub fn get<T: $bound$(<$bound_param>)? + 'static>(&self) -> Option<
                 std::iter::Map<
-                    std::slice::Iter<crate::composite::TypeBox>,
-                    for<'r> fn(&'r crate::composite::TypeBox) -> &'r T
+                    std::slice::Iter<crate::common::composite::TypeBox>,
+                    for<'r> fn(&'r crate::common::composite::TypeBox) -> &'r T
                 >
             > {
                 self.target.get::<T>()
