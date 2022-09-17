@@ -66,6 +66,9 @@ impl<Event: Clone> Node<Event> {
     }
 
     pub(crate) fn do_phase(&self, ctx: Ctx<Event>) {
+        let name = self.name.unwrap_or("noname");
+        let area = format!("{:?}", ctx.area);
+        let x = 0;
         for feature in self.components.iter() {
             feature.do_phase(ctx.clone());
         }
