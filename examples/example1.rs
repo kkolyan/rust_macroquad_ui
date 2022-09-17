@@ -20,24 +20,23 @@ use rust_macroquad_ui::basic_composites::no_stretch::NoStretchMode::Horizontal;
 use rust_macroquad_ui::basic_composites::stretch::{stretch_horizontal, stretch_vertical};
 use rust_macroquad_ui::primitives::{color_fill, height, horizontal_group, single, vertical_group, width};
 use rust_macroquad_ui::primitives::conditional::{conditional};
-use rust_macroquad_ui::primitives::mouse::{on_click, on_hover};
+use rust_macroquad_ui::primitives::mouse::{on_click, on_hover, on_pressed};
 use rust_macroquad_ui::primitives::node::{Node, node};
 use rust_macroquad_ui::primitives::text::TextStyle;
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 enum Event {
     Click(usize),
+    Pressed(usize),
     Hover(usize),
 }
 
 struct App {
-    hovered: HashSet<usize>,
 }
 
 #[macroquad::main("UI Example 001")]
 async fn main() {
     let mut app = App {
-        hovered: Default::default()
     };
     loop {
         if is_key_pressed(Escape) {
@@ -49,7 +48,6 @@ async fn main() {
 }
 
 fn do_frame(app: &mut App) {
-    app.hovered.clear();
     clear_background(BLACK);
     let events = rust_macroquad_ui::core::collect_layer_events(&root());
     for event in events.iter() {
@@ -57,9 +55,9 @@ fn do_frame(app: &mut App) {
             Event::Click(item) => {
                 println!("clicked {}", item);
             }
-            Event::Hover(item) => {
-                app.hovered.insert(*item);
+            Event::Hover(_) => {
             }
+            Event::Pressed(_) => {}
         }
     }
 
@@ -120,9 +118,13 @@ fn left_panel(text_1: TextStyle) -> Node<Event> {
                     .map(|i| node()
                         .set(on_click(Left, Event::Click(i)))
                         .set(on_hover(Event::Hover(i)))
+                        .set(on_pressed(Left, Event::Pressed(i)))
                         .set(conditional((
                             Some(color_fill(RED)),
-                            [(Event::Hover(i), Some(color_fill(ORANGE)))]
+                            [
+                                (Event::Pressed(i), Some(color_fill(YELLOW))),
+                                (Event::Hover(i), Some(color_fill(ORANGE))),
+                            ]
                         )))
                         .set(single(
                             label(format!("Item {:?}", i), text_1)
