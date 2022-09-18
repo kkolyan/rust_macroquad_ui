@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 use std::fmt::Debug;
 use crate::basic_composites::node_factories::{horizontal_node, vertical_node};
-use crate::basic_composites::stretch::StretchSide::{StretchBottom, StretchLeft, StretchRight, StretchTop};
+use crate::basic_composites::stretch::StretchSide::{StretchBottom, StretchHorizontal, StretchLeft, StretchRight, StretchTop, StretchVertical};
 use crate::primitives::{height, height_stretch, width, width_stretch};
 use crate::primitives::node::{Node, node, NodePadding};
 
@@ -26,6 +26,8 @@ pub enum StretchSide {
     StretchRight,
     StretchBottom,
     StretchLeft,
+    StretchVertical,
+    StretchHorizontal,
 }
 
 #[derive(Clone, Debug)]
@@ -36,24 +38,24 @@ pub struct StretchAround {
 impl<Event: Clone + Debug + 'static> NodePadding<Event> for StretchAround {
     fn expand_padding(&self, content: Node<Event>) -> Node<Event> {
         let mut n = content;
-        if self.sides.contains(&StretchLeft) || self.sides.contains(&StretchRight) {
+        if self.sides.contains(&StretchLeft) || self.sides.contains(&StretchRight) || self.sides.contains(&StretchHorizontal) {
             let mut items = vec![];
-            if self.sides.contains(&StretchLeft) {
+            if self.sides.contains(&StretchLeft) || self.sides.contains(&StretchHorizontal) {
                 items.push(stretch_horizontal());
             }
             items.push(n);
-            if self.sides.contains(&StretchRight) {
+            if self.sides.contains(&StretchRight) || self.sides.contains(&StretchHorizontal) {
                 items.push(stretch_horizontal());
             }
             n = horizontal_node(items)
         }
-        if self.sides.contains(&StretchTop) || self.sides.contains(&StretchBottom) {
+        if self.sides.contains(&StretchTop) || self.sides.contains(&StretchBottom) || self.sides.contains(&StretchVertical) {
             let mut items = vec![];
-            if self.sides.contains(&StretchTop) {
+            if self.sides.contains(&StretchTop) || self.sides.contains(&StretchVertical) {
                 items.push(stretch_vertical());
             }
             items.push(n);
-            if self.sides.contains(&StretchBottom) {
+            if self.sides.contains(&StretchBottom) || self.sides.contains(&StretchVertical) {
                 items.push(stretch_vertical());
             }
             n = vertical_node(items)
