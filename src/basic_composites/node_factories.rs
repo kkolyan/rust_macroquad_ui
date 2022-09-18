@@ -1,8 +1,11 @@
+use std::collections::HashSet;
 use std::fmt::Debug;
 use crate::basic_composites::background::{Background, background};
 
 use crate::basic_composites::margin::Margin;
 use crate::basic_composites::no_stretch::{no_stretch, NoStretchMode};
+use crate::basic_composites::stretch;
+use crate::basic_composites::stretch::StretchSide;
 use crate::Node;
 use crate::primitives::{height, horizontal_content, vertical_content, width};
 use crate::primitives::node::{node, NodePadding};
@@ -43,4 +46,8 @@ pub fn height_node<Event: Clone>(value: f32) -> Node<Event> {
         .name("height")
         .set(width(0.0))
         .set(height(value))
+}
+
+pub fn stretch_around_node<Event: Clone + Debug + 'static, T: Into<HashSet<StretchSide>>>(sides: T, target: Node<Event>) -> Node<Event> {
+    stretch::stretch_around(sides).expand_padding(target)
 }

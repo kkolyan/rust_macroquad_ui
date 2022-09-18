@@ -16,7 +16,8 @@ use rust_macroquad_ui::basic_composites::label::label;
 use rust_macroquad_ui::basic_composites::margin::margin;
 use rust_macroquad_ui::basic_composites::no_stretch::no_stretch;
 use rust_macroquad_ui::basic_composites::no_stretch::NoStretchMode::Horizontal;
-use rust_macroquad_ui::basic_composites::stretch::{stretch_horizontal, stretch_vertical};
+use rust_macroquad_ui::basic_composites::node_factories::{horizontal_node, stretch_around_node, vertical_node};
+use rust_macroquad_ui::basic_composites::stretch::{stretch_horizontal, stretch_vertical, StretchSide};
 use rust_macroquad_ui::common::to_vec::ToVec;
 use rust_macroquad_ui::primitives::{color_fill, height, horizontal_content, single_content, vertical_content, width};
 use rust_macroquad_ui::primitives::conditional::conditional;
@@ -65,16 +66,14 @@ fn root() -> Node<Event> {
         color: WHITE,
     };
 
-    node().name("root")
-        .set(horizontal_content([
-            left_panel(text_1),
-            stretch_horizontal(),
-            node().name("Right block")
-                .set(vertical_content([
-                    stretch_vertical(),
-                    right_bottom_panel(),
-                ])),
-        ]))
+    horizontal_node([
+        left_panel(text_1),
+        stretch_horizontal(),
+        vertical_node([
+            stretch_vertical(),
+            right_bottom_panel(),
+        ])
+    ])
 }
 
 fn right_bottom_panel() -> Node<Event> {
@@ -103,7 +102,7 @@ fn left_panel(text_1: TextStyle) -> Node<Event> {
         .set(vertical_content([
             node()
                 .set(vertical_content([
-                    label("The map", text_1),
+                    stretch_around_node([StretchSide::StretchLeft, StretchSide::StretchRight], label("The map", text_1)),
                     node()
                         .pad(background(BLUE))
                         .set(width(150.0))
