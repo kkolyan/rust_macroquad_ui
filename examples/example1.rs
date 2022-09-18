@@ -74,7 +74,7 @@ fn root() -> Node<Event> {
     };
 
     horizontal_node([
-        left_panel(text_1),
+        left_panel(&text_1),
         stretch_horizontal(),
         vertical_node([
             stretch_vertical(),
@@ -102,14 +102,14 @@ fn right_bottom_panel() -> Node<Event> {
         ))
 }
 
-fn left_panel(text_1: TextStyle) -> Node<Event> {
+fn left_panel(text_1: &TextStyle) -> Node<Event> {
     node().name("Left panel")
         .pad(background(GREEN))
         .pad(no_stretch(Horizontal))
         .set(vertical_content([
             node()
                 .set(vertical_content([
-                    stretch_around_node([StretchHorizontal], label("The map", text_1.clone())),
+                    stretch_around_node([StretchHorizontal], label("The map", text_1)),
                     node()
                         .pad(background(BLUE))
                         .set(width(150.0))
@@ -132,7 +132,7 @@ fn left_panel(text_1: TextStyle) -> Node<Event> {
                             ]
                         )))
                         .set(single_content(
-                            label(format!("Item {:?}", i), text_1.clone())
+                            label(format!("Item {:?}", i), text_1)
                         ))
                     )
                     .to_vec())

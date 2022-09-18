@@ -4,6 +4,12 @@ use crate::primitives::{height, text, width};
 use crate::primitives::node::{node, Node};
 use crate::primitives::text::TextStyle;
 
+impl <T: Into<TextStyle> + Clone> From<&T> for TextStyle {
+    fn from(v: &T) -> Self {
+        let w: T = v.clone();
+        w.into()
+    }
+}
 
 pub fn label<Event: Clone + Debug + 'static, T: Into<String>, S: Into<TextStyle>>(t: T, style: S) -> Node<Event> {
     let t = t.into();
