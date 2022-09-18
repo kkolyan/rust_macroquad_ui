@@ -6,6 +6,7 @@ use macroquad::color::WHITE;
 use macroquad::input::is_key_pressed;
 use macroquad::input::KeyCode::Escape;
 use macroquad::input::MouseButton::Left;
+use macroquad::math::vec2;
 use macroquad::texture::Texture2D;
 use macroquad::window::clear_background;
 use macroquad::window::next_frame;
@@ -25,6 +26,7 @@ use rust_macroquad_ui::primitives::mouse::{on_click, on_hover, on_pressed};
 use rust_macroquad_ui::primitives::node::{Node, node};
 use rust_macroquad_ui::primitives::text::TextStyle;
 use rust_macroquad_ui::UILayer;
+use StretchSide::StretchHorizontal;
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 enum Event {
@@ -64,6 +66,11 @@ fn root() -> Node<Event> {
     let text_1 = TextStyle {
         font_size: 32.0,
         color: WHITE,
+        shadow: Some(vec![
+            (vec2(0.0, -2.0), BLACK),
+            (vec2(-2.0, 0.0), BLACK),
+            (vec2(-2.0, -2.0), BLACK),
+        ])
     };
 
     horizontal_node([
@@ -102,7 +109,7 @@ fn left_panel(text_1: TextStyle) -> Node<Event> {
         .set(vertical_content([
             node()
                 .set(vertical_content([
-                    stretch_around_node([StretchSide::StretchLeft, StretchSide::StretchRight], label("The map", text_1)),
+                    stretch_around_node([StretchHorizontal], label("The map", text_1.clone())),
                     node()
                         .pad(background(BLUE))
                         .set(width(150.0))
@@ -125,7 +132,7 @@ fn left_panel(text_1: TextStyle) -> Node<Event> {
                             ]
                         )))
                         .set(single_content(
-                            label(format!("Item {:?}", i), text_1)
+                            label(format!("Item {:?}", i), text_1.clone())
                         ))
                     )
                     .to_vec())

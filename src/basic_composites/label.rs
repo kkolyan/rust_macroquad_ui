@@ -10,7 +10,7 @@ pub fn label<Event: Clone + Debug + 'static, T: Into<String>, S: Into<TextStyle>
     let style = style.into();
     let size = measure_self(t.as_str(), style.font_size);
     node().name("label")
-        .set(text(t, style))
+        .set(text(t, style.clone()))
         .set(width(size.width))
         .set(height(style.font_size))
 }
