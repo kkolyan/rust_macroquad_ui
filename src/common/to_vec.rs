@@ -1,11 +1,9 @@
-use crate::Node;
-
 pub trait ToVec<T> {
     fn to_vec(self) -> Vec<T>;
 }
 
-impl <Event, I: Iterator<Item=Node<Event>>> ToVec<Node<Event>> for I {
-    fn to_vec(self) -> Vec<Node<Event>> {
+impl <T, I: Iterator<Item=T>> ToVec<T> for I {
+    fn to_vec(self) -> Vec<T> {
         self.collect()
     }
 }
