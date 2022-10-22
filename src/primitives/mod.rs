@@ -42,8 +42,8 @@ pub fn height_no_stretch() -> Height {
     Height(Dimension::RemoveStretch)
 }
 
-pub fn layers<Event: Clone, const N: usize>(children: [Node<Event>; N]) -> Group<Event> {
-    Group::new(Layout::Layered, children.to_vec())
+pub fn layers<Event: Clone, T: Into<Vec<Node<Event>>>>(children: T) -> Group<Event> {
+    Group::new(Layout::Layered, children.into())
 }
 
 pub fn horizontal_content<Event: Clone, T: Into<Vec<Node<Event>>>>(children: T) -> Group<Event> {
