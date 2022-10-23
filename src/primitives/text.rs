@@ -33,7 +33,7 @@ impl<Event> Element<Event> for Text {
             Phase::Draw { .. } => {
                 let text = self.value.as_str();
                 let size = self.measure_self();
-                let pos = vec2(ctx.area.x, ctx.area.y + size.offset_y + 0.2 * self.style.font_size);
+                let pos = vec2(ctx.area.x, ctx.area.y + 0.725 * self.style.font_size);
                 draw_text(text, pos.x, pos.y, self.style.font_size, self.style.color);
                 let draw = |pos: Vec2, color: Color| {
                     draw_text(text, pos.x, pos.y, self.style.font_size, color);
